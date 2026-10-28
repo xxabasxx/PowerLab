@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شبیه‌ساز پل دیودی با بار لامپ روشنایی</title>
+    <style>
+        :root {
+            --bg-color: #0a0f1d;
+            --panel-bg: rgba(18, 26, 47, 0.75);
+            --accent-cyan: #00f2fe;
+            --accent-blue: #4facfe;
+            --accent-gold: #ffb703;
+            --text-color: #e2e8f0;
+            --border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--accent-cyan);
+            margin-bottom: 6px;
+            text-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+        }
+
+        header p {
+            font-size: 0.95rem;
+            color: #94a3b8;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 1300px;
+        }
+
+        @media (max-width: 950px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .controls-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 0.88rem;
+            display: flex;
+            justify-content: space-between;
+            color: #cbd5e1;
+        }
+
+        .control-group label span.val {
+            color: var(--accent-cyan);
+            font-weight: bold;
+            direction: ltr;
+        }
+
+        input[type="range"] {
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #1e293b;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--accent-cyan);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        .toggle-group {
+            display: flex;
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 3px;
+            gap: 4px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.82rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            font-weight: bold;
+        }
+
+        .simulation-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 440px;
+            background: rgba(10, 15, 29, 0.6);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .scopes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 650px) {
+            .scopes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .scope-card {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .scope-card h3 {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .scope-card h3::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .scope-ac h3::before { background: #ff4757; }
+        .scope-dc h3::before { background: var(--accent-gold); }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .metric-card .title {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .metric-card .val {
+            font-size: 1.05rem;
+            font-weight: bold;
+            color: var(--accent-cyan);
+            direction: ltr;
+        }
+
+        .glow-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            box-shadow: 0 0 10px var(--accent-gold);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>یکسوکننده تمام‌موج پل دیودی با بار لامپ روشنایی</h1>
+        <p>مشاهده زنده یکسوسازی متناوب به مستقیم و نقش خازن در حذف چشمک‌زدن لامپ</p>
+    </header>
+
+    <div class="main-container">
+        <!-- پنل تنظیمات -->
+        <aside class="glass-panel controls-sidebar">
+            <div class="control-group">
+                <label>نوع نمایش جریان:</label>
+                <div class="toggle-group">
+                    <button class="toggle-btn active" id="btn-conv" onclick="setFlowMode('conv')">قراردادی (+ به -)</button>
+                    <button class="toggle-btn" id="btn-elec" onclick="setFlowMode('elec')">الکترونی (- به +)</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>ولتاژ پیک ورودی (AC): <span class="val" id="val-vac">12 V</span></label>
+                <input type="range" id="slider-vac" min="5" max="24" value="12" step="1">
+            </div>
+
+            <div class="control-group">
+                <label>فرکانس ورودی (AC): <span class="val" id="val-freq">50 Hz</span></label>
+                <input type="range" id="slider-freq" min="1" max="100" value="50" step="5">
+            </div>
+
+            <div class="control-group">
+                <label>ظرفیت خازن صافی (C): <span class="val" id="val-cap">470 µF</span></label>
+                <input type="range" id="slider-cap" min="0" max="2200" value="470" step="50">
+            </div>
+
+            <div class="control-group">
+                <label>مقاومت لامپ (توان لامپ): <span class="val" id="val-res">50 Ω</span></label>
+                <input type="range" id="slider-res" min="10" max="200" value="50" step="5">
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="title">پیک ورودی</div>
+                    <div class="val" id="m-vpeak">12.0 V</div>
+                </div>
+                <div class="metric-card">
+                    <div class="title">میانگین DC</div>
+                    <div class="val" id="m-vdc">0.0 V</div>
+                </div>
+                <div class="metric-card">
+                    <div class="title">ولتاژ ریپل</div>
+                    <div class="val" id="m-vrip">0.0 V</div>
+                </div>
+                <div class="metric-card">
+                    <div class="title">توان لامپ</div>
+                    <div class="val" id="m-pwr">0.0 W</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ناحیه شبیه‌سازی و اسیلوسکوپ‌ها -->
+        <main class="simulation-area">
+            <div class="glass-panel canvas-container">
+                <canvas id="circuitCanvas"></canvas>
+            </div>
+
+            <div class="scopes-grid">
+                <div class="glass-panel scope-card scope-ac">
+                    <h3>سیگنال ورودی متناوب (AC Source)</h3>
+                    <div style="height: 110px; position: relative;">
+                        <canvas id="scopeAC"></canvas>
+                    </div>
+                </div>
+                <div class="glass-panel scope-card scope-dc">
+                    <h3>ولتاژ روی لامپ (Filtered DC Output)</h3>
+                    <div style="height: 110px; position: relative;">
+                        <canvas id="scopeDC"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // مقداردهی اولیه متغیرها
+        let flowMode = 'conv'; // 'conv' or 'elec'
+        let Vac_peak = 12;
+        let freq = 50;
+        let capacitance = 470; // uF
+        let lampResistance = 50; // Ohms
+        const V_diode = 0.7; // افت ولتاژ هر دیود سیلیسیمی
+
+        // عناصر DOM
+        const canvas = document.getElementById('circuitCanvas');
+        const ctx = canvas.getContext('2d');
+        const canvasAC = document.getElementById('scopeAC');
+        const ctxAC = canvasAC.getContext('2d');
+        const canvasDC = document.getElementById('scopeDC');
+        const ctxDC = canvasDC.getContext('2d');
+
+        // اسلایدرها
+        document.getElementById('slider-vac').addEventListener('input', (e) => {
+            Vac_peak = parseFloat(e.target.value);
+            document.getElementById('val-vac').innerText = Vac_peak + ' V';
+        });
+        document.getElementById('slider-freq').addEventListener('input', (e) => {
+            freq = parseFloat(e.target.value);
+            document.getElementById('val-freq').innerText = freq + ' Hz';
+        });
+        document.getElementById('slider-cap').addEventListener('input', (e) => {
+            capacitance = parseFloat(e.target.value);
+            document.getElementById('val-cap').innerText = capacitance + ' µF';
+        });
+        document.getElementById('slider-res').addEventListener('input', (e) => {
+            lampResistance = parseFloat(e.target.value);
+            document.getElementById('val-res').innerText = lampResistance + ' Ω';
+        });
+
+        function setFlowMode(mode) {
+            flowMode = mode;
+            document.getElementById('btn-conv').classList.toggle('active', mode === 'conv');
+            document.getElementById('btn-elec').classList.toggle('active', mode === 'elec');
+        }
+
+        // تنظیم اندازه بوم‌ها
+        function resizeCanvases() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            const rectAC = canvasAC.parentElement.getBoundingClientRect();
+            canvasAC.width = rectAC.width;
+            canvasAC.height = rectAC.height;
+
+            const rectDC = canvasDC.parentElement.getBoundingClientRect();
+            canvasDC.width = rectDC.width;
+            canvasDC.height = rectDC.height;
+        }
+        window.addEventListener('resize', resizeCanvases);
+        setTimeout(resizeCanvases, 50);
+
+        // آرایه‌های ذخیره تاریخچه اسیلوسکوپ
+        const acHistory = [];
+        const dcHistory = [];
+        const maxHistory = 300;
+
+        // ذرات جریان
+        const particles = [];
+        const numParticles = 45;
+
+        for (let i = 0; i < numParticles; i++) {
+            particles.push({
+                progress: Math.random(),
+                speed: 0.005,
+                pathType: i % 2 === 0 ? 'load' : 'cap' // برخی از خازن و برخی از لامپ رد می‌شوند
+            });
+        }
+
+        // حالت شبیه‌سازی
+        let time = 0;
+        let V_cap = 0; // ولتاژ ذخیره شده در خازن
+
+        // حلقه‌ی اصلی پویانمایی
+        function animate(timestamp) {
+            time += 0.016; // گام زمانی تقریبی ۶۰ فریم بر ثانیه
+
+            // محاسبات الکتریکی
+            const omega = 2 * Math.PI * freq;
+            const v_ac_instant = Vac_peak * Math.sin(omega * time);
+            const v_rectified_raw = Math.max(0, Math.abs(v_ac_instant) - 2 * V_diode);
+
+            // شبیه‌سازی خازن و بار
+            const dt = 0.0015; // گام زمانی فیزیک
+            const C_farads = capacitance * 1e-6;
+            
+            if (C_farads > 0) {
+                if (v_rectified_raw > V_cap) {
+                    // شارژ سریع خازن
+                    V_cap += (v_rectified_raw - V_cap) * 0.4;
+                } else {
+                    // دشارژ خازن روی لامپ
+                    const R = lampResistance;
+                    const tau = R * C_farads;
+                    const dischargeRate = Math.exp(-dt / tau);
+                    V_cap *= dischargeRate;
+                }
+            } else {
+                // بدون خازن
+                V_cap = v_rectified_raw;
+            }
+
+            const V_load = V_cap; // ولتاژ روی لامپ
+
+            // بروزرسانی اسیلوسکوپ‌ها
+            acHistory.push(v_ac_instant);
+            dcHistory.push(V_load);
+            if (acHistory.length > maxHistory) acHistory.shift();
+            if (dcHistory.length > maxHistory) dcHistory.shift();
+
+            // به روزرسانی کارت‌های محاسباتی
+            const v_dc_avg = dcHistory.reduce((a, b) => a + b, 0) / dcHistory.length;
+            const v_max = Math.max(...dcHistory);
+            const v_min = Math.min(...dcHistory);
+            const v_ripple = v_max - v_min;
+            const pwr_lamp = (V_load * V_load) / lampResistance;
+
+            document.getElementById('m-vpeak').innerText = Vac_peak.toFixed(1) + ' V';
+            document.getElementById('m-vdc').innerText = v_dc_avg.toFixed(1) + ' V';
+            document.getElementById('m-vrip').innerText = v_ripple.toFixed(1) + ' V';
+            document.getElementById('m-pwr').innerText = pwr_lamp.toFixed(1) + ' W';
+
+            // رندر مدار و گرافیک
+            drawCircuit(v_ac_instant, V_load);
+            drawScope(ctxAC, canvasAC, acHistory, Vac_peak * 1.2, '#ff4757');
+            drawScope(ctxDC, canvasDC, dcHistory, Vac_peak * 1.2, '#ffb703');
+
+            requestAnimationFrame(animate);
+        }
+
+        // رسم مدار کامل
+        function drawCircuit(v_ac, v_load) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // نقاط کلیدی هندسه مدار
+            const cx = w * 0.35; // مرکز پل دیودی
+            const cy = h * 0.5;
+            const bridgeSize = Math.min(w, h) * 0.18;
+
+            // گره‌های پل دیودی
+            const N_top = { x: cx, y: cy - bridgeSize };
+            const N_bottom = { x: cx, y: cy + bridgeSize };
+            const N_left = { x: cx - bridgeSize, y: cy };
+            const N_right = { x: cx + bridgeSize, y: cy };
+
+            // منبع AC (سمت چپ)
+            const acSourceX = w * 0.1;
+            
+            // خازن (وسط سمت راست)
+            const capX = w * 0.65;
+            
+            // لامپ بار (سمت راست کامل)
+            const lampX = w * 0.85;
+
+            // 1. رسم سیم‌های اصلی مدار
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#334155';
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+
+            // ورودی AC به پل
+            ctx.beginPath();
+            ctx.moveTo(acSourceX, cy - 40);
+            ctx.lineTo(N_left.x, cy - 40);
+            ctx.lineTo(N_left.x, N_left.y);
+            
+            ctx.moveTo(acSourceX, cy + 40);
+            ctx.lineTo(N_right.x, cy + 40);
+            ctx.lineTo(N_right.x, N_right.y);
+            ctx.stroke();
+
+            // لوزی پل دیودی
+            ctx.beginPath();
+            ctx.moveTo(N_top.x, N_top.y);
+            ctx.lineTo(N_right.x, N_right.y);
+            ctx.lineTo(N_bottom.x, N_bottom.y);
+            ctx.lineTo(N_left.x, N_left.y);
+            ctx.closePath();
+            ctx.stroke();
+
+            // خروجی DC مثبت (بالا) به خازن و لامپ
+            ctx.beginPath();
+            ctx.moveTo(N_top.x, N_top.y);
+            ctx.lineTo(N_top.x, cy - bridgeSize - 30);
+            ctx.lineTo(lampX, cy - bridgeSize - 30);
+            ctx.lineTo(lampX, cy - 50); // بالای لامپ
+            ctx.stroke();
+
+            // خروجی DC منفی/زمین (پایین) به خازن و لامپ
+            ctx.beginPath();
+            ctx.moveTo(N_bottom.x, N_bottom.y);
+            ctx.lineTo(N_bottom.x, cy + bridgeSize + 30);
+            ctx.lineTo(lampX, cy + bridgeSize + 30);
+            ctx.lineTo(lampX, cy + 50); // پایین لامپ
+            ctx.stroke();
+
+            // شاخه خازن
+            if (capacitance > 0) {
+                ctx.beginPath();
+                ctx.moveTo(capX, cy - bridgeSize - 30);
+                ctx.lineTo(capX, cy - 25);
+                ctx.moveTo(capX, cy + bridgeSize + 30);
+                ctx.lineTo(capX, cy + 25);
+                ctx.stroke();
+            }
+
+            // 2. رسم المان‌های مدار
+            drawACSource(acSourceX, cy, v_ac);
+            drawBridgeDiodes(N_top, N_bottom, N_left, N_right, v_ac);
+            if (capacitance > 0) drawCapacitor(capX, cy, capacitance);
+            drawLamp(lampX, cy, v_load, Vac_peak);
+
+            // 3. حرکت ذرات (الکترون‌ها / جریان)
+            drawParticles(v_ac, v_load, N_top, N_bottom, N_left, N_right, acSourceX, capX, lampX, cy, bridgeSize);
+        }
+
+        // رسم منبع AC
+        function drawACSource(x, y, v_ac) {
+            ctx.save();
+            ctx.fillStyle = '#0f172a';
+            ctx.strokeStyle = varColor('--accent-blue');
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // علامت موج سینوسی داخل منبع
+            ctx.beginPath();
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 2;
+            for (let i = -15; i <= 15; i++) {
+                const px = x + i;
+                const py = y + Math.sin((i / 15) * Math.PI) * 10;
+                if (i === -15) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+
+            // قطبیت لحظه‌ای
+            ctx.font = 'bold 14px Segoe UI';
+            ctx.fillStyle = v_ac >= 0 ? '#ff4757' : '#2ed573';
+            ctx.fillText(v_ac >= 0 ? '+' : '-', x - 5, y - 38);
+            ctx.fillStyle = v_ac >= 0 ? '#2ed573' : '#ff4757';
+            ctx.fillText(v_ac >= 0 ? '-' : '+', x - 4, y + 48);
+
+            ctx.restore();
+        }
+
+        // رسم دیودها
+        function drawBridgeDiodes(N_top, N_bottom, N_left, N_right, v_ac) {
+            const isPos = v_ac >= 0;
+            // D1: Left->Top, D2: Right->Top, D3: Bottom->Left, D4: Bottom->Right
+            const d1_on = isPos && Math.abs(v_ac) > 1.4;
+            const d4_on = isPos && Math.abs(v_ac) > 1.4;
+            const d2_on = !isPos && Math.abs(v_ac) > 1.4;
+            const d3_on = !isPos && Math.abs(v_ac) > 1.4;
+
+            drawSingleDiode(N_left, N_top, d1_on);
+            drawSingleDiode(N_right, N_top, d2_on);
+            drawSingleDiode(N_bottom, N_left, d3_on);
+            drawSingleDiode(N_bottom, N_right, d4_on);
+        }
+
+        function drawSingleDiode(p1, p2, isActive) {
+            const mx = (p1.x + p2.x) / 2;
+            const my = (p1.y + p2.y) / 2;
+            const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+
+            ctx.save();
+            ctx.translate(mx, my);
+            ctx.rotate(angle);
+
+            const size = 14;
+            ctx.fillStyle = isActive ? '#00f2fe' : '#1e293b';
+            ctx.strokeStyle = isActive ? '#00f2fe' : '#64748b';
+            ctx.lineWidth = 2;
+
+            // مثلث دیود
+            ctx.beginPath();
+            ctx.moveTo(size, 0);
+            ctx.lineTo(-size, -size);
+            ctx.lineTo(-size, size);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // خط کاتد
+            ctx.beginPath();
+            ctx.moveTo(size, -size);
+            ctx.lineTo(size, size);
+            ctx.stroke();
+
+            // دایره بیرونی دیود استاندارد
+            ctx.beginPath();
+            ctx.arc(0, 0, size * 1.3, 0, Math.PI * 2);
+            ctx.strokeStyle = isActive ? 'rgba(0, 242, 254, 0.4)' : 'rgba(255,255,255,0.05)';
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // رسم خازن صافی
+        function drawCapacitor(x, y, capValue) {
+            ctx.save();
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 4;
+
+            // صفحه بالا
+            ctx.beginPath();
+            ctx.moveTo(x - 20, y - 10);
+            ctx.lineTo(x + 20, y - 10);
+            ctx.stroke();
+
+            // صفحه پایین
+            ctx.beginPath();
+            ctx.moveTo(x - 20, y + 10);
+            ctx.lineTo(x + 20, y + 10);
+            ctx.stroke();
+
+            // برچسب خازن
+            ctx.font = '12px Segoe UI';
+            ctx.fillStyle = '#94a3b8';
+            ctx.textAlign = 'center';
+            ctx.fillText(capValue + ' µF', x, y + 30);
+
+            ctx.restore();
+        }
+
+        // رسم لامپ روشنایی با درخشش واقع‌گرایانه
+        function drawLamp(x, y, v_load, v_max) {
+            ctx.save();
+            
+            // میزان روشنایی بین 0 تا 1
+            const brightness = Math.min(1, Math.max(0, v_load / Math.max(1, v_max)));
+
+            // 1. هاله درخشش خارجی (Glow)
+            if (brightness > 0.05) {
+                const glowRadius = 40 + brightness * 60;
+                const radialGradient = ctx.createRadialGradient(x, y, 10, x, y, glowRadius);
+                radialGradient.addColorStop(0, `rgba(255, 230, 120, ${brightness * 0.9})`);
+                radialGradient.addColorStop(0.4, `rgba(255, 170, 0, ${brightness * 0.4})`);
+                radialGradient.addColorStop(1, 'rgba(255, 150, 0, 0)');
+
+                ctx.fillStyle = radialGradient;
+                ctx.beginPath();
+                ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 2. حباب شیشه‌ای لامپ
+            const bulbRadius = 35;
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.05 + brightness * 0.2})`;
+            ctx.strokeStyle = brightness > 0.3 ? '#ffb703' : '#64748b';
+            ctx.lineWidth = 2.5;
+
+            ctx.beginPath();
+            ctx.arc(x, y, bulbRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // 3. پایه فلزی لامپ
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(x - 12, y + bulbRadius - 4, 24, 16);
+
+            // 4. رشته تنگستن درون لامپ (Filament)
+            ctx.beginPath();
+            ctx.strokeStyle = brightness > 0.1 ? `rgb(255, ${200 + brightness * 55}, ${150 * brightness})` : '#475569';
+            ctx.lineWidth = brightness > 0.1 ? 3 : 1.5;
+
+            // پایه نگهدارنده رشته
+            ctx.moveTo(x - 10, y + bulbRadius - 5);
+            ctx.lineTo(x - 8, y - 5);
+            ctx.lineTo(x - 3, y - 15);
+            ctx.lineTo(x + 3, y - 15);
+            ctx.lineTo(x + 8, y - 5);
+            ctx.lineTo(x + 10, y + bulbRadius - 5);
+            ctx.stroke();
+
+            // مرکز مارپیچ رشته
+            if (brightness > 0.05) {
+                ctx.shadowColor = '#ffb703';
+                ctx.shadowBlur = brightness * 20;
+            }
+
+            // متن اطلاعات لامپ
+            ctx.shadowBlur = 0;
+            ctx.font = '12px Segoe UI';
+            ctx.fillStyle = '#cbd5e1';
+            ctx.textAlign = 'center';
+            ctx.fillText('لامپ بار', x, y - bulbRadius - 12);
+
+            ctx.restore();
+        }
+
+        // رسم ذرات متحرک روی سیم‌ها (گام‌های دقیق ۹۰ درجه)
+        function drawParticles(v_ac, v_load, N_top, N_bottom, N_left, N_right, acX, capX, lampX, cy, bSize) {
+            if (Math.abs(v_ac) < 0.5 && v_load < 0.5) return;
+
+            const isPos = v_ac >= 0;
+            const speedFactor = 0.008 + (Math.abs(v_ac) / 24) * 0.015;
+
+            particles.forEach(p => {
+                p.progress += speedFactor;
+                if (p.progress >= 1) p.progress = 0;
+
+                // تعیین مسیر حرکت بر اساس نیم‌سیکل و نوع ذره (خازن یا لامپ)
+                let path = [];
+                const targetX = p.pathType === 'cap' && capacitance > 0 ? capX : lampX;
+
+                if (flowMode === 'conv') {
+                    // جریان قراردادی: مثبت به منفی
+                    if (isPos) {
+                        // نیم‌سیکل مثبت: AC Top -> N_left -> N_top -> Target -> N_bottom -> N_right -> AC Bottom
+                        path = [
+                            {x: acX, y: cy - 40},
+                            {x: N_left.x, y: cy - 40},
+                            {x: N_left.x, y: N_left.y},
+                            {x: N_top.x, y: N_top.y},
+                            {x: N_top.x, y: cy - bSize - 30},
+                            {x: targetX, y: cy - bSize - 30},
+                            {x: targetX, y: cy + bSize + 30},
+                            {x: N_bottom.x, y: cy + bSize + 30},
+                            {x: N_bottom.x, y: N_bottom.y},
+                            {x: N_right.x, y: N_right.y},
+                            {x: N_right.x, y: cy + 40},
+                            {x: acX, y: cy + 40}
+                        ];
+                    } else {
+                        // نیم‌سیکل منفی: AC Bottom -> N_right -> N_top -> Target -> N_bottom -> N_left -> AC Top
+                        path = [
+                            {x: acX, y: cy + 40},
+                            {x: N_right.x, y: cy + 40},
+                            {x: N_right.x, y: N_right.y},
+                            {x: N_top.x, y: N_top.y},
+                            {x: N_top.x, y: cy - bSize - 30},
+                            {x: targetX, y: cy - bSize - 30},
+                            {x: targetX, y: cy + bSize + 30},
+                            {x: N_bottom.x, y: cy + bSize + 30},
+                            {x: N_bottom.x, y: N_bottom.y},
+                            {x: N_left.x, y: N_left.y},
+                            {x: N_left.x, y: cy - 40},
+                            {x: acX, y: cy - 40}
+                        ];
+                    }
+                } else {
+                    // جریان الکترونی: منفی به مثبت (معکوس)
+                    if (isPos) {
+                        path = [
+                            {x: acX, y: cy + 40},
+                            {x: N_right.x, y: cy + 40},
+                            {x: N_right.x, y: N_right.y},
+                            {x: N_bottom.x, y: N_bottom.y},
+                            {x: N_bottom.x, y: cy + bSize + 30},
+                            {x: targetX, y: cy + bSize + 30},
+                            {x: targetX, y: cy - bSize - 30},
+                            {x: N_top.x, y: cy - bSize - 30},
+                            {x: N_top.x, y: N_top.y},
+                            {x: N_left.x, y: N_left.y},
+                            {x: N_left.x, y: cy - 40},
+                            {x: acX, y: cy - 40}
+                        ];
+                    } else {
+                        path = [
+                            {x: acX, y: cy - 40},
+                            {x: N_left.x, y: cy - 40},
+                            {x: N_left.x, y: N_left.y},
+                            {x: N_bottom.x, y: N_bottom.y},
+                            {x: N_bottom.x, y: cy + bSize + 30},
+                            {x: targetX, y: cy + bSize + 30},
+                            {x: targetX, y: cy - bSize - 30},
+                            {x: N_top.x, y: cy - bSize - 30},
+                            {x: N_top.x, y: N_top.y},
+                            {x: N_right.x, y: N_right.y},
+                            {x: N_right.x, y: cy + 40},
+                            {x: acX, y: cy + 40}
+                        ];
+                    }
+                }
+
+                // محاسبه موقعیت نقطه ذره روی پاره‌خط‌ها
+                const pt = getPointAlongPath(path, p.progress);
+                if (pt) {
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, flowMode === 'conv' ? 4 : 3, 0, Math.PI * 2);
+                    ctx.fillStyle = flowMode === 'conv' ? '#00f2fe' : '#ffb703';
+                    ctx.shadowColor = ctx.fillStyle;
+                    ctx.shadowBlur = 8;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            });
+        }
+
+        // تابع کمک‌کننده برای محاسبه دقیق مختصات روی مسیر خطوط
+        function getPointAlongPath(points, t) {
+            if (points.length < 2) return null;
+
+            let totalLen = 0;
+            const lengths = [];
+            for (let i = 0; i < points.length - 1; i++) {
+                const dx = points[i+1].x - points[i].x;
+                const dy = points[i+1].y - points[i].y;
+                const len = Math.sqrt(dx * dx + dy * dy);
+                lengths.push(len);
+                totalLen += len;
+            }
+
+            let targetLen = t * totalLen;
+            let currentLen = 0;
+
+            for (let i = 0; i < lengths.length; i++) {
+                if (currentLen + lengths[i] >= targetLen) {
+                    const segmentT = (targetLen - currentLen) / lengths[i];
+                    const p1 = points[i];
+                    const p2 = points[i+1];
+                    return {
+                        x: p1.x + (p2.x - p1.x) * segmentT,
+                        y: p1.y + (p2.y - p1.y) * segmentT
+                    };
+                }
+                currentLen += lengths[i];
+            }
+            return points[points.length - 1];
+        }
+
+        // رسم اسیلوسکوپ‌ها
+        function drawScope(ctxScope, canvasScope, data, maxVal, color) {
+            const w = canvasScope.width;
+            const h = canvasScope.height;
+
+            ctxScope.clearRect(0, 0, w, h);
+
+            // شبکه‌بندی پس‌زمینه اسیلوسکوپ
+            ctxScope.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctxScope.lineWidth = 1;
+            ctxScope.beginPath();
+            for (let x = 0; x < w; x += 20) { ctxScope.moveTo(x, 0); ctxScope.lineTo(x, h); }
+            for (let y = 0; y < h; y += 20) { ctxScope.moveTo(0, y); ctxScope.lineTo(w, y); }
+            ctxScope.stroke();
+
+            // خط صفر / مرجع
+            const midY = h / 2;
+            ctxScope.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctxScope.beginPath();
+            ctxScope.moveTo(0, midY);
+            ctxScope.lineTo(w, midY);
+            ctxScope.stroke();
+
+            if (data.length < 2) return;
+
+            // رسم نمودار ولتاژ
+            ctxScope.beginPath();
+            ctxScope.strokeStyle = color;
+            ctxScope.lineWidth = 2.5;
+
+            const step = w / maxHistory;
+
+            for (let i = 0; i < data.length; i++) {
+                const x = i * step;
+                // نگاشت ولتاژ به ارتفاع بوم
+                const y = midY - (data[i] / maxVal) * (h * 0.4);
+                if (i === 0) ctxScope.moveTo(x, y);
+                else ctxScope.lineTo(x, y);
+            }
+            ctxScope.stroke();
+        }
+
+        function varColor(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        // شروع پویانمایی
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

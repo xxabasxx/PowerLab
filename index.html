@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABAS SOFT | Power Electronics Lab</title>
+    <style>
+        @import url('https://v1.fontapi.ir/css/Vazirmatn');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+
+        :root {
+            --bg-dark: #0f111a;
+            --bg-glow: radial-gradient(circle at 50% 0%, #1e293b, #0f111a 70%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --neon-accent: #00f2fe;
+            --neon-accent-2: #4facfe;
+            --logo-gold: #e2b170;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success-color: #10b981;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Vazirmatn', 'Poppins', sans-serif;
+            background: var(--bg-glow);
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 30px 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* حالت مخفی شدن کشویی سایدبار */
+        .sidebar.collapsed {
+            transform: translateX(100%);
+        }
+        html[dir="ltr"] .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        /* Logo Branding & Icon */
+        .brand-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            position: relative; /* برای دکمه جمع‌کردن */
+        }
+
+        /* دکمه کشویی جمع کردن منو */
+        .collapse-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            left: -10px;
+            transition: all 0.3s ease;
+        }
+        html[dir="ltr"] .collapse-btn {
+            left: auto;
+            right: -10px;
+        }
+        .collapse-btn:hover {
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--neon-accent);
+            border-color: var(--neon-accent);
+        }
+        /* تنظیم جهت آیکون جمع کردن بر اساس زبان */
+        html[dir="rtl"] #collapse-icon { transform: rotate(0deg); }
+        html[dir="ltr"] #collapse-icon { transform: rotate(180deg); }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(15, 17, 26, 0.6);
+            border: 1.5px solid var(--logo-gold);
+            box-shadow: 0 0 12px rgba(226, 177, 112, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .brand-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--logo-gold);
+        }
+
+        .brand-text {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            letter-spacing: 1.5px;
+            color: #fff;
+        }
+        .brand-text span {
+            background: linear-gradient(to right, var(--neon-accent), var(--neon-accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .menu-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-main);
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 15px;
+            text-align: start;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--glass-border);
+            transform: translateX(-5px);
+        }
+        .nav-btn.active {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.05));
+            border-color: var(--neon-accent-2);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+        }
+
+        .nav-btn.about-link {
+            margin-top: auto;
+            border-color: rgba(226, 177, 112, 0.3);
+            color: var(--logo-gold);
+        }
+        .nav-btn.about-link:hover {
+            background: rgba(226, 177, 112, 0.1);
+            border-color: var(--logo-gold);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            margin-right: 280px;
+            padding: 30px;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: margin 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* حالت تمام عرض شدن محتوا هنگام جمع بودن منو */
+        .main-content.expanded {
+            margin-right: 0 !important;
+        }
+        html[dir="ltr"] .main-content.expanded {
+            margin-left: 0 !important;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+        }
+        .page-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* دکمه باز کردن منو (همبرگری) در هدر */
+        .expand-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--neon-accent);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: none; /* در حالت عادی مخفی است */
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .expand-btn:hover {
+            background: rgba(0, 242, 254, 0.1);
+            border-color: var(--neon-accent);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Fullscreen Button */
+        .fullscreen-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--neon-accent);
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .fullscreen-btn:hover {
+            background: rgba(0, 242, 254, 0.1);
+            border-color: var(--neon-accent);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+            transform: scale(1.03);
+        }
+
+        /* Language Switch Button */
+        .lang-switch {
+            display: flex;
+            gap: 5px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 5px;
+            border-radius: 30px;
+        }
+        .lang-switch button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Poppins', 'Vazirmatn', sans-serif;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .lang-switch button.active {
+            background: var(--neon-accent-2);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.4);
+        }
+
+        /* Simulator iFrame Container */
+        .iframe-container {
+            width: 100%;
+            flex-grow: 1;
+            min-height: 560px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+        }
+        .iframe-container:fullscreen {
+            width: 100vw;
+            height: 100vh;
+            padding: 0;
+            border-radius: 0;
+            background: #0f111a;
+        }
+
+        /* Educational Tabs Section */
+        .educational-panel {
+            padding: 25px;
+        }
+        .edu-tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        .edu-tab-btn {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        .edu-tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--neon-accent-2);
+        }
+        .edu-tab-btn.active {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.1));
+            color: var(--neon-accent);
+            border-color: var(--neon-accent);
+        }
+        .edu-content {
+            line-height: 1.8;
+            color: #e2e8f0;
+            font-size: 15px;
+        }
+        .edu-content h3 { color: var(--neon-accent); margin-top: 0; }
+        .edu-content ul { padding-right: 20px; }
+        html[dir="ltr"] .edu-content ul { padding-right: 0; padding-left: 20px; }
+        .edu-content code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 3px 8px;
+            border-radius: 6px;
+            color: var(--neon-accent);
+            font-family: monospace;
+        }
+
+        /* About Us & Support Section (Hidden by Default) */
+        .about-panel {
+            padding: 30px;
+            display: none; 
+        }
+        .about-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .about-header h2 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--logo-gold);
+        }
+        .about-desc {
+            line-height: 1.9;
+            color: #cbd5e1;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Copyable Cards */
+        .copy-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .copy-card {
+            background: rgba(15, 17, 26, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .copy-card:hover {
+            border-color: var(--neon-accent-2);
+            box-shadow: 0 0 15px rgba(79, 172, 254, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .copy-card-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-card-value {
+            font-family: monospace;
+            font-size: 14px;
+            color: var(--neon-accent);
+            word-break: break-all;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .copy-card-badge {
+            font-family: 'Poppins', 'Vazirmatn', sans-serif;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .copy-card.copied {
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.08);
+        }
+        .copy-card.copied .copy-card-badge {
+            background: var(--success-color);
+            color: #fff;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 20px;
+                border-radius: 0 0 20px 20px;
+            }
+            .main-content {
+                margin-right: 0;
+                margin-left: 0;
+                padding: 15px;
+            }
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            .nav-btn:hover { transform: translateY(-2px); }
+            .nav-btn.about-link { margin-top: 10px; }
+            /* در موبایل دکمه‌های کشویی نیاز نیست مخفی می‌شوند */
+            .collapse-btn, .expand-btn { display: none !important; }
+        }
+
+        /* LTR Styles for English */
+        html[dir="ltr"] .sidebar { right: auto; left: 0; }
+        html[dir="ltr"] .main-content { margin-right: 0; margin-left: 280px; }
+        html[dir="ltr"] .nav-btn:hover { transform: translateX(5px); }
+        @media (max-width: 900px) { html[dir="ltr"] .main-content { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar glass-panel">
+        <div class="brand-container">
+            <!-- دکمه جمع کردن منو -->
+            <button class="collapse-btn" onclick="toggleSidebar()" title="بستن منو">
+                <svg id="collapse-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 8L9 4l-3 8H2"/>
+                </svg>
+            </div>
+            <div class="brand-text">ABAS <span>SOFT</span></div>
+        </div>
+
+        <div class="menu-title" id="menu-title-text">مدارهای سوئیچینگ (SMPS)</div>
+        
+        <button class="nav-btn active" onclick="loadSimulator('buck', this)" id="nav-buck">مبدل کاهنده (Buck)</button>
+        <button class="nav-btn" onclick="loadSimulator('boost', this)" id="nav-boost">مبدل افزاینده (Boost)</button>
+        <button class="nav-btn" onclick="loadSimulator('buck_boost', this)" id="nav-buckboost">مبدل باک-بوست</button>
+
+        <button class="nav-btn about-link" onclick="showAboutSection(this)" id="nav-about">ℹ️ درباره ما و حمایت</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        
+        <!-- Header -->
+        <div class="header glass-panel">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <!-- دکمه باز کردن منو (فقط وقتی منو جمع است نمایش داده می‌شود) -->
+                <button class="expand-btn" id="expand-sidebar-btn" onclick="toggleSidebar()" title="باز کردن منو">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                </button>
+                <h1 class="page-title" id="main-title">آزمایشگاه مجازی الکترونیک قدرت</h1>
+            </div>
+            
+            <div class="header-controls">
+                <button class="fullscreen-btn" id="fs-btn-element" onclick="toggleFullScreen()">
+                    <span>⛶</span> <span id="fs-text">تمام صفحه</span>
+                </button>
+
+                <div class="lang-switch">
+                    <button id="btn-fa" class="active" onclick="switchLanguage('fa')">فارسی</button>
+                    <button id="btn-en" onclick="switchLanguage('en')">EN</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulator Container -->
+        <div class="iframe-container glass-panel" id="fs-container">
+            <iframe id="sim-frame" src="simulators/buck.html?lang=fa" allowfullscreen></iframe>
+        </div>
+
+        <!-- Educational Section -->
+        <div class="educational-panel glass-panel" id="educational-section">
+            <div class="edu-tabs">
+                <button class="edu-tab-btn active" onclick="switchEduTab('concept')" id="tab-btn-concept">📌 مفهوم و کارکرد</button>
+                <button class="edu-tab-btn" onclick="switchEduTab('formulas')" id="tab-btn-formulas">📐 فرمول‌ها</button>
+                <button class="edu-tab-btn" onclick="switchEduTab('components')" id="tab-btn-components">⚡ نقش قطعات</button>
+                <button class="edu-tab-btn" onclick="switchEduTab('apps')" id="tab-btn-apps">🏭 کاربردهای صنعتی</button>
+            </div>
+            <div class="edu-content" id="edu-content-area"></div>
+        </div>
+
+        <!-- About Us & Support Section -->
+        <div class="about-panel glass-panel" id="about-section">
+            <div class="about-header">
+                <h2>🌐 <span id="about-title-text">درباره ما و حمایت از پروژه</span></h2>
+            </div>
+            <div class="about-desc" id="about-desc-text">
+                ما برای بالا بردن سطح علمی همه انسان‌های جهان، این آزمایشگاه مجازی شبیه‌سازی را به صورت کاملاً رایگان در اختیار همگان قرار داده‌ایم. از همه دوستان و علاقه‌مندان در سراسر جهان دعوت می‌کنیم تا در صورت تمایل، برای حفظ، نگهداری، اضافه کردن مدارهای جدید و ارتقای سطح کیفی این پلتفرم آموزشی ما را همراهی و حمایت کنند.
+            </div>
+
+            <!-- Click to Copy Grid -->
+            <div class="copy-cards-grid">
+                <!-- Email -->
+                <div class="copy-card" onclick="copyExactText(emailAddress, 'badge-email')">
+                    <div class="copy-card-title">
+                        <span id="label-email">ایمیل ارتباطی:</span>
+                        <span class="copy-card-badge" id="badge-email">کلیک برای کپی</span>
+                    </div>
+                    <div class="copy-card-value">
+                        <span>xxabasxxsoft@gmail.com</span>
+                        <span>📋</span>
+                    </div>
+                </div>
+
+                <!-- Tether (USDT) -->
+                <div class="copy-card" onclick="copyExactText(usdtAddress, 'badge-usdt')">
+                    <div class="copy-card-title">
+                        <span id="label-usdt">آدرس تتر (USDT - TRC20):</span>
+                        <span class="copy-card-badge" id="badge-usdt">کلیک برای کپی</span>
+                    </div>
+                    <div class="copy-card-value">
+                        <span id="val-usdt">TRC20 Address...</span>
+                        <span>📋</span>
+                    </div>
+                </div>
+
+                <!-- Bitcoin (BTC) -->
+                <div class="copy-card" onclick="copyExactText(btcAddress, 'badge-btc')">
+                    <div class="copy-card-title">
+                        <span id="label-btc">آدرس بیت‌کوین (BTC):</span>
+                        <span class="copy-card-badge" id="badge-btc">کلیک برای کپی</span>
+                    </div>
+                    <div class="copy-card-value">
+                        <span id="val-btc">Bitcoin Address...</span>
+                        <span>📋</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Exact Values for Copying ---
+        const emailAddress = "xxabasxxsoft@gmail.com";
+        const usdtAddress  = "TYD34xyz...YOUR_USDT_TRC20_WALLET_ADDRESS"; // آدرس واقعی خود را اینجا قرار دهید
+        const btcAddress   = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa...YOUR_BTC_WALLET"; // آدرس واقعی خود را اینجا قرار دهید
+
+        // --- UI Translation Dictionary ---
+        const dictUI = {
+            fa: {
+                title: "آزمایشگاه مجازی الکترونیک قدرت",
+                menuTitle: "مدارهای سوئیچینگ (SMPS)",
+                navBuck: "مبدل کاهنده (Buck)",
+                navBoost: "مبدل افزاینده (Boost)",
+                navBuckBoost: "مبدل باک-بوست",
+                navAbout: "ℹ️ درباره ما و حمایت",
+                fsEnter: "تمام صفحه",
+                fsExit: "خروج از تمام‌صفحه",
+                tabConcept: "📌 مفهوم و کارکرد",
+                tabFormulas: "📐 فرمول‌ها",
+                tabComponents: "⚡ نقش قطعات",
+                tabApps: "🏭 کاربردهای صنعتی",
+                aboutTitle: "درباره ما و حمایت از پروژه",
+                aboutDesc: "ما برای بالا بردن سطح علمی همه انسان‌های جهان این سایت را رایگان در اختیار همه قرار داده‌ایم و از همه دوستان در سراسر جهان می‌خواهیم در صورت تمایل برای حفظ و کمک به ادامه این مسیر و ارتقا سطح کیفی این سایت به ما کمک کنید.",
+                labelEmail: "ایمیل ارتباطی:",
+                labelUsdt: "آدرس تتر (USDT - TRC20):",
+                labelBtc: "آدرس بیت‌کوین (BTC):",
+                clickToCopy: "کلیک برای کپی",
+                copiedText: "✓ کپی شد!"
+            },
+            en: {
+                title: "Power Electronics Virtual Lab",
+                menuTitle: "SMPS Circuits",
+                navBuck: "Buck Converter",
+                navBoost: "Boost Converter",
+                navBuckBoost: "Buck-Boost Converter",
+                navAbout: "ℹ️ About Us & Support",
+                fsEnter: "Fullscreen",
+                fsExit: "Exit Fullscreen",
+                tabConcept: "📌 Concept & Operation",
+                tabFormulas: "📐 Key Formulas",
+                tabComponents: "⚡ Components",
+                tabApps: "🏭 Applications",
+                aboutTitle: "About Us & Project Support",
+                aboutDesc: "To elevate scientific knowledge for all humans worldwide, we have provided this virtual interactive simulator freely to everyone. We warmly invite friends globally to support us in maintaining and improving this educational platform.",
+                labelEmail: "Contact Email:",
+                labelUsdt: "Tether Address (USDT - TRC20):",
+                labelBtc: "Bitcoin Address (BTC):",
+                clickToCopy: "Click to copy",
+                copiedText: "✓ Copied!"
+            }
+        };
+
+        // --- Educational Content Dictionary ---
+        const eduData = {
+            fa: {
+                buck: {
+                    concept: "<h3>نحوه کارکرد مبدل باک (Buck)</h3><p>مبدل باک ولتاژ ورودی را به ولتاژ کمتر تبدیل می‌کند. زمانی که کلید (MOSFET) وصل است، انرژی در سلف ذخیره شده و خازن شارژ می‌شود. زمانی که کلید قطع می‌شود، دیود هرزگرد وارد مدار شده و سلف انرژی ذخیره شده خود را به بار تحویل می‌دهد.</p>",
+                    formulas: "<h3>فرمول‌های کلیدی مبدل باک</h3><ul><li><b>ولتاژ خروجی:</b> <code>Vout = D × Vin</code></li><li><b>دیوتی سایکل (D):</b> <code>D = Ton / T</code> (بین ۰ تا ۱)</li></ul>",
+                    components: "<h3>نقش قطعات اصلی</h3><ul><li><b>MOSFET:</b> کلیدزنی سریع (قطع و وصل پالس PWM).</li><li><b>سلف:</b> ذخیره انرژی مغناطیسی و هموار کردن جریان.</li><li><b>دیود هرزگرد:</b> ایجاد مسیر جریان هنگام خاموش بودن کلید.</li><li><b>خازن:</b> کاهش ریپل ولتاژ خروجی.</li></ul>",
+                    apps: "<h3>کاربردهای صنعتی</h3><ul><li>تغذیه پردازنده کامپیوتر (VRM).</li><li>شارژرهای موبایل و لپ‌تاپ.</li><li>کنترل‌کننده‌های خورشیدی (MPPT).</li></ul>"
+                },
+                boost: {
+                    concept: "<h3>نحوه کارکرد مبدل بوست (Boost)</h3><p>مبدل بوست ولتاژ خروجی را از ورودی بیشتر می‌کند. هنگام وصل بودن سوئیچ، جریان از سلف گذشته و انرژی ذخیره می‌شود. هنگام باز شدن سوئیچ، ولتاژ سلف با ولتاژ ورودی جمع شده و ولتاژ بالاتری به خروجی پمپ می‌شود.</p>",
+                    formulas: "<h3>فرمول‌های کلیدی مبدل بوست</h3><ul><li><b>ولتاژ خروجی:</b> <code>Vout = Vin / (1 - D)</code></li><li><b>دیوتی سایکل:</b> <code>D = 1 - (Vin / Vout)</code></li></ul>",
+                    components: "<h3>نقش قطعات اصلی</h3><ul><li><b>سلف:</b> ایجاد ضربه ولتاژ بالا (Inductive Spike).</li><li><b>MOSFET:</b> اتصال کوتاه لحظه‌ای سلف به زمین برای شارژ.</li><li><b>دیود:</b> جلوگیری از برگشت جریان از خازن.</li></ul>",
+                    apps: "<h3>کاربردهای صنعتی</h3><ul><li>پاوربانک‌ها (۳.۷ به ۵ ولت).</li><li>درایور بک‌لایت LED تلویزیون.</li><li>مبدل‌های خودروهای برقی (EV).</li></ul>"
+                },
+                buck_boost: {
+                    concept: "<h3>نحوه کارکرد مبدل باک-بوست (Buck-Boost)</h3><p>این مبدل قادر است ولتاژ را هم کاهش و هم افزایش دهد و پلاریته ولتاژ خروجی را معکوس کند. اگر D < 0.5 باشد مدار کاهنده و اگر D > 0.5 باشد مدار افزاینده عمل می‌کند.</p>",
+                    formulas: "<h3>فرمول‌های کلیدی مبدل باک-بوست</h3><ul><li><b>ولتاژ خروجی:</b> <code>Vout = Vin × (D / (1 - D))</code></li><li><b>نقطه تقارن:</b> در <code>D = 0.5</code> ولتاژ خروجی با ورودی برابر است.</li></ul>",
+                    components: "<h3>نقش قطعات اصلی</h3><ul><li><b>MOSFET:</b> کنترل زمان شارژ سلف از منبع.</li><li><b>سلف:</b> واسط انتقال انرژی.</li><li><b>دیود:</b> هدایت جریان منفی سلف به خروجی.</li></ul>",
+                    apps: "<h3>کاربردهای صنعتی</h3><ul><li>دستگاه‌های باتری‌دار با افت ولتاژ متغیر.</li><li>سیستم‌های الکترونیک خودرویی.</li></ul>"
+                }
+            },
+            en: {
+                buck: {
+                    concept: "<h3>Buck Converter Operation</h3><p>The Buck converter steps down input voltage efficiently. When the MOSFET is ON, energy is stored in the inductor. When OFF, the freewheeling diode conducts, delivering energy to the load.</p>",
+                    formulas: "<h3>Key Formulas</h3><ul><li><b>Output Voltage:</b> <code>Vout = D × Vin</code></li><li><b>Duty Cycle (D):</b> <code>D = Ton / T</code></li></ul>",
+                    components: "<h3>Component Roles</h3><ul><li><b>MOSFET:</b> High-speed PWM switch.</li><li><b>Inductor:</b> Stores magnetic energy.</li><li><b>Freewheeling Diode:</b> Provides current path when MOSFET is OFF.</li><li><b>Output Capacitor:</b> Smooths output voltage.</li></ul>",
+                    apps: "<h3>Applications</h3><ul><li>Motherboard CPU VRMs.</li><li>Mobile chargers.</li><li>Solar MPPT controllers.</li></ul>"
+                },
+                boost: {
+                    concept: "<h3>Boost Converter Operation</h3><p>The Boost converter steps up input voltage. When the switch turns ON, current flows through the inductor storing energy. When OFF, inductor voltage adds to the input voltage, boosting the output.</p>",
+                    formulas: "<h3>Key Formulas</h3><ul><li><b>Output Voltage:</b> <code>Vout = Vin / (1 - D)</code></li></ul>",
+                    components: "<h3>Component Roles</h3><ul><li><b>Inductor:</b> Stores energy and creates voltage spikes.</li><li><b>MOSFET:</b> Shorts inductor to ground momentarily to charge it.</li><li><b>Diode:</b> Prevents reverse current.</li></ul>",
+                    apps: "<h3>Applications</h3><ul><li>Power banks (3.7V to 5V).</li><li>TV LED Backlight drivers.</li><li>Electric Vehicle powertrains.</li></ul>"
+                },
+                buck_boost: {
+                    concept: "<h3>Buck-Boost Operation</h3><p>Can both step up and step down voltage while inverting output polarity. Buck mode occurs when D < 0.5, Boost mode when D > 0.5.</p>",
+                    formulas: "<h3>Key Formulas</h3><ul><li><b>Output Voltage:</b> <code>Vout = Vin × (D / (1 - D))</code></li></ul>",
+                    components: "<h3>Component Roles</h3><ul><li><b>MOSFET & Inductor:</b> Store and transfer energy with inverted polarity.</li></ul>",
+                    apps: "<h3>Applications</h3><ul><li>Battery-powered devices with fluctuating supply.</li><li>Automotive electronics.</li></ul>"
+                }
+            }
+        };
+
+        // --- State Management ---
+        let currentLang = 'fa';
+        let currentSim = 'buck';
+        let currentEduTab = 'concept';
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            
+            document.documentElement.setAttribute('dir', lang === 'fa' ? 'rtl' : 'ltr');
+            document.documentElement.setAttribute('lang', lang);
+
+            document.getElementById('btn-fa').classList.toggle('active', lang === 'fa');
+            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+
+            document.getElementById('main-title').innerText = dictUI[lang].title;
+            document.getElementById('menu-title-text').innerText = dictUI[lang].menuTitle;
+            document.getElementById('nav-buck').innerText = dictUI[lang].navBuck;
+            document.getElementById('nav-boost').innerText = dictUI[lang].navBoost;
+            document.getElementById('nav-buckboost').innerText = dictUI[lang].navBuckBoost;
+            document.getElementById('nav-about').innerText = dictUI[lang].navAbout;
+            
+            document.getElementById('tab-btn-concept').innerText = dictUI[lang].tabConcept;
+            document.getElementById('tab-btn-formulas').innerText = dictUI[lang].tabFormulas;
+            document.getElementById('tab-btn-components').innerText = dictUI[lang].tabComponents;
+            document.getElementById('tab-btn-apps').innerText = dictUI[lang].tabApps;
+
+            document.getElementById('about-title-text').innerText = dictUI[lang].aboutTitle;
+            document.getElementById('about-desc-text').innerText = dictUI[lang].aboutDesc;
+            document.getElementById('label-email').innerText = dictUI[lang].labelEmail;
+            document.getElementById('label-usdt').innerText = dictUI[lang].labelUsdt;
+            document.getElementById('label-btc').innerText = dictUI[lang].labelBtc;
+
+            document.getElementById('badge-email').innerText = dictUI[lang].clickToCopy;
+            document.getElementById('badge-usdt').innerText = dictUI[lang].clickToCopy;
+            document.getElementById('badge-btc').innerText = dictUI[lang].clickToCopy;
+
+            const isFS = !!document.fullscreenElement;
+            document.getElementById('fs-text').innerText = isFS ? dictUI[lang].fsExit : dictUI[lang].fsEnter;
+
+            document.getElementById('sim-frame').src = `simulators/${currentSim}.html?lang=${lang}`;
+
+            switchEduTab(currentEduTab);
+        }
+
+        // تابع باز و بسته کردن کشویی سایدبار
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            const expandBtn = document.getElementById('expand-sidebar-btn');
+
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+
+            // نمایش یا مخفی کردن دکمه همبرگری در هدر
+            if (sidebar.classList.contains('collapsed')) {
+                expandBtn.style.display = 'flex';
+            } else {
+                expandBtn.style.display = 'none';
+            }
+        }
+
+        function loadSimulator(simName, btnElement) {
+            currentSim = simName;
+
+            document.getElementById('fs-container').style.display = 'block';
+            document.getElementById('educational-section').style.display = 'block';
+            document.getElementById('about-section').style.display = 'none';
+
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            document.getElementById('sim-frame').src = `simulators/${simName}.html?lang=${currentLang}`;
+
+            switchEduTab(currentEduTab);
+        }
+
+        function showAboutSection(btnElement) {
+            document.getElementById('fs-container').style.display = 'none';
+            document.getElementById('educational-section').style.display = 'none';
+            document.getElementById('about-section').style.display = 'block';
+
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+
+        function switchEduTab(tabName) {
+            currentEduTab = tabName;
+            
+            document.querySelectorAll('.edu-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+            
+            document.getElementById('edu-content-area').innerHTML = eduData[currentLang][currentSim][tabName];
+        }
+
+        function copyExactText(exactString, badgeId) {
+            if (!exactString) return;
+            navigator.clipboard.writeText(exactString).then(() => {
+                const badge = document.getElementById(badgeId);
+                const originalText = dictUI[currentLang].clickToCopy;
+                
+                badge.innerText = dictUI[currentLang].copiedText;
+                badge.closest('.copy-card').classList.add('copied');
+
+                setTimeout(() => {
+                    badge.innerText = originalText;
+                    badge.closest('.copy-card').classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+
+        function toggleFullScreen() {
+            const elem = document.getElementById('fs-container');
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) elem.requestFullscreen();
+                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+                else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const isFS = !!document.fullscreenElement;
+            document.getElementById('fs-text').innerText = isFS ? dictUI[currentLang].fsExit : dictUI[currentLang].fsEnter;
+        });
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('val-usdt').innerText = usdtAddress;
+            document.getElementById('val-btc').innerText = btcAddress;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.get('lang') === 'en') {
+                switchLanguage('en');
+            } else {
+                switchEduTab('concept');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>یکسوکننده تمام‌پل دیودی | Full-Bridge Rectifier - ABAS SOFT</title>
+    <style>
+        :root {
+            --bg-color: #0f111a;
+            --panel-bg: rgba(22, 27, 38, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --track-bg: #1e293b;
+            --ac-color: #38bdf8;
+            --dc-color: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            padding: 12px;
+        }
+
+        /* Responsive Layout Grid */
+        .simulator-container {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 12px;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+            flex: 1;
+        }
+
+        @media (max-width: 850px) {
+            .simulator-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            height: 330px;
+            background: #06070a;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Oscilloscopes Row */
+        .scopes-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .scopes-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .scope-wrapper {
+            height: 150px;
+            background: #040507;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Controls Sidebar */
+        .controls-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .control-value {
+            font-family: monospace;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        /* Muted Range Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 5px;
+            cursor: pointer;
+            background: var(--track-bg);
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 15px;
+            width: 15px;
+            border-radius: 50%;
+            background: #475569;
+            border: 2px solid #94a3b8;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -5px;
+            transition: all 0.2s ease;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: var(--accent);
+            border-color: #ffffff;
+            transform: scale(1.15);
+        }
+
+        /* Toggle Switch */
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-round {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #334155;
+            transition: .3s;
+            border-radius: 20px;
+        }
+
+        .slider-round:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-round {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider-round:before {
+            transform: translateX(20px);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .metric-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .metric-title {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .metric-val {
+            font-family: monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        /* Hidden Language Switcher Container */
+        .lang-switch {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hidden Lang Elements to prevent JS null errors -->
+    <div class="lang-switch">
+        <button id="btn-lang-fa"></button>
+        <button id="btn-lang-en"></button>
+    </div>
+
+    <div class="simulator-container">
+        <!-- Left Column: Schematic & Scopes -->
+        <div class="left-column">
+            
+            <!-- Schematic Canvas -->
+            <div class="glass-panel">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 12h4l2-4 2 8 2-4h4"/></svg>
+                        <span data-i18n="title">شماتیک مدار یکسوکننده تمام‌پل دیودی (Full-Bridge Rectifier)</span>
+                    </div>
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas id="schematicCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Oscilloscopes Row -->
+            <div class="scopes-row">
+                <!-- AC Input Scope -->
+                <div class="glass-panel">
+                    <div class="card-header">
+                        <div class="card-title" style="color: var(--ac-color);">
+                            <span data-i18n="scope_ac">سیگنال ورودی AC (متناوب)</span>
+                        </div>
+                    </div>
+                    <div class="scope-wrapper">
+                        <canvas id="scopeAcCanvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- DC Output Scope -->
+                <div class="glass-panel">
+                    <div class="card-header">
+                        <div class="card-title" style="color: var(--dc-color);">
+                            <span data-i18n="scope_dc">سیگنال خروجی DC (یکسو شده و صاف شده)</span>
+                        </div>
+                    </div>
+                    <div class="scope-wrapper">
+                        <canvas id="scopeDcCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Controls Sidebar -->
+        <div class="controls-sidebar">
+            <div class="glass-panel" style="display: flex; flex-direction: column; gap: 12px;">
+                
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                        <span data-i18n="controls">تنظیمات مدار</span>
+                    </div>
+                </div>
+
+                <!-- Input AC Voltage -->
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <span data-i18n="lbl_vin">ولتاژ پیک ورودی (V_peak):</span>
+                        <span class="control-value" id="val_vin">24.0 V</span>
+                    </div>
+                    <input type="range" id="input_vin" min="5" max="50" step="1" value="24">
+                </div>
+
+                <!-- AC Frequency -->
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <span data-i18n="lbl_freq">فرکانس AC (f):</span>
+                        <span class="control-value" id="val_freq">50 Hz</span>
+                    </div>
+                    <input type="range" id="input_freq" min="10" max="100" step="1" value="50">
+                </div>
+
+                <!-- Load Resistance Slider -->
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <span data-i18n="lbl_load">مقاومت بار (R_load):</span>
+                        <span class="control-value" id="val_load">100 Ω</span>
+                    </div>
+                    <input type="range" id="input_load" min="10" max="1000" step="10" value="100">
+                </div>
+
+                <!-- Filter Capacitor Toggle -->
+                <div class="toggle-row">
+                    <span style="font-size: 0.83rem; color: var(--text-main);" data-i18n="lbl_cap_enable">خازن صافی (Filter Capacitor):</span>
+                    <label class="switch">
+                        <input type="checkbox" id="input_cap_enable" checked>
+                        <span class="slider-round"></span>
+                    </label>
+                </div>
+
+                <!-- Capacitance Value -->
+                <div class="control-group" id="cap_slider_group">
+                    <div class="control-label-row">
+                        <span data-i18n="lbl_cap">ظرفیت خازن (C):</span>
+                        <span class="control-value" id="val_cap">470 µF</span>
+                    </div>
+                    <input type="range" id="input_cap" min="10" max="2200" step="10" value="470">
+                </div>
+
+                <!-- Circuit Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-title" data-i18n="m_vdc">ولتاژ متوسط DC:</span>
+                        <span class="metric-val" id="m_vdc_val" style="color: var(--dc-color);">0.0 V</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-title" data-i18n="m_vripple">ولتاژ ریپل (Vp-p):</span>
+                        <span class="metric-val" id="m_vripple_val" style="color: #f59e0b;">0.0 V</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Multi-language dictionary
+        const i18n = {
+            fa: {
+                title: "شماتیک مدار یکسوکننده تمام‌پل دیودی (Full-Bridge Rectifier)",
+                scope_ac: "سیگنال ورودی AC (متناوب)",
+                scope_dc: "سیگنال خروجی DC (یکسو شده و صاف شده)",
+                controls: "تنظیمات مدار",
+                lbl_vin: "ولتاژ پیک ورودی (V_peak):",
+                lbl_freq: "فرکانس AC (f):",
+                lbl_load: "مقاومت بار (R_load):",
+                lbl_cap_enable: "خازن صافی (Filter Capacitor):",
+                lbl_cap: "ظرفیت خازن (C):",
+                m_vdc: "ولتاژ متوسط DC:",
+                m_vripple: "ولتاژ ریپل (Vp-p):"
+            },
+            en: {
+                title: "Full-Bridge Diode Rectifier Circuit Schematic",
+                scope_ac: "AC Input Voltage Signal",
+                scope_dc: "DC Output Voltage (Rectified & Filtered)",
+                controls: "Circuit Controls",
+                lbl_vin: "Input Peak Voltage (V_peak):",
+                lbl_freq: "AC Frequency (f):",
+                lbl_load: "Load Resistance (R_load):",
+                lbl_cap_enable: "Filter Capacitor:",
+                lbl_cap: "Capacitance (C):",
+                m_vdc: "Average DC Voltage:",
+                m_vripple: "Ripple Voltage (Vp-p):"
+            }
+        };
+
+        // State & Simulation Parameters
+        const state = {
+            vPeak: 24.0,
+            freq: 50, // Hz
+            rLoad: 100.0, // Ohms
+            capEnabled: true,
+            cCap: 470e-6, // Farads
+            diodeDrop: 0.7,
+            time: 0,
+            vCapInstant: 0,
+            particles: []
+        };
+
+        // Oscilloscope History Buffers
+        const historyLength = 300;
+        const acHistory = new Array(historyLength).fill(0);
+        const dcHistory = new Array(historyLength).fill(0);
+
+        // Canvas Contexts
+        const canvasSchematic = document.getElementById('schematicCanvas');
+        const ctxS = canvasSchematic.getContext('2d');
+        const canvasAc = document.getElementById('scopeAcCanvas');
+        const ctxAc = canvasAc.getContext('2d');
+        const canvasDc = document.getElementById('scopeDcCanvas');
+        const ctxDc = canvasDc.getContext('2d');
+
+        // Input Controls
+        const inputVin = document.getElementById('input_vin');
+        const inputFreq = document.getElementById('input_freq');
+        const inputLoad = document.getElementById('input_load');
+        const inputCapEnable = document.getElementById('input_cap_enable');
+        const inputCap = document.getElementById('input_cap');
+        const capGroup = document.getElementById('cap_slider_group');
+
+        const valVin = document.getElementById('val_vin');
+        const valFreq = document.getElementById('val_freq');
+        const valLoad = document.getElementById('val_load');
+        const valCap = document.getElementById('val_cap');
+
+        const mVdcVal = document.getElementById('m_vdc_val');
+        const mVrippleVal = document.getElementById('m_vripple_val');
+
+        // Init Particles
+        for(let i = 0; i < 30; i++) {
+            state.particles.push({
+                progress: Math.random(),
+                speed: 0.005 + Math.random() * 0.003
+            });
+        }
+
+        // Multi-language setup
+        function setLanguage(lang) {
+            document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang] && i18n[lang][key]) {
+                    el.textContent = i18n[lang][key];
+                }
+            });
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const langParam = urlParams.get('lang');
+        if (langParam === 'fa' || langParam === 'en') setLanguage(langParam);
+
+        // Control Listeners
+        inputVin.addEventListener('input', (e) => {
+            state.vPeak = parseFloat(e.target.value);
+            valVin.textContent = `${state.vPeak.toFixed(1)} V`;
+        });
+        inputFreq.addEventListener('input', (e) => {
+            state.freq = parseFloat(e.target.value);
+            valFreq.textContent = `${state.freq} Hz`;
+        });
+        inputLoad.addEventListener('input', (e) => {
+            state.rLoad = parseFloat(e.target.value);
+            valLoad.textContent = `${state.rLoad} Ω`;
+        });
+        inputCapEnable.addEventListener('change', (e) => {
+            state.capEnabled = e.target.checked;
+            capGroup.style.opacity = state.capEnabled ? "1" : "0.4";
+            capGroup.style.pointerEvents = state.capEnabled ? "auto" : "none";
+        });
+        inputCap.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            state.cCap = val * 1e-6;
+            valCap.textContent = `${val} µF`;
+        });
+
+        // Resize Canvas dynamically
+        function resizeCanvases() {
+            [canvasSchematic, canvasAc, canvasDc].forEach(c => {
+                const rect = c.parentElement.getBoundingClientRect();
+                c.width = rect.width * window.devicePixelRatio || rect.width;
+                c.height = rect.height * window.devicePixelRatio || rect.height;
+            });
+        }
+        window.addEventListener('resize', resizeCanvases);
+        resizeCanvases();
+
+        // Physical Capacitor Simulation Loop
+        function updatePhysics(dt) {
+            state.time += dt;
+
+            const vAcInstant = state.vPeak * Math.sin(2 * Math.PI * state.freq * state.time);
+            const vRectified = Math.max(0, Math.abs(vAcInstant) - 2 * state.diodeDrop);
+
+            if (!state.capEnabled) {
+                state.vCapInstant = vRectified;
+            } else {
+                if (vRectified >= state.vCapInstant) {
+                    // Diode conducts -> Rapidly charge capacitor
+                    state.vCapInstant = vRectified;
+                } else {
+                    // Diode OFF -> Exponential discharge through load R
+                    const rc = state.rLoad * state.cCap;
+                    const decayFactor = Math.exp(-dt / rc);
+                    state.vCapInstant = state.vCapInstant * decayFactor;
+                }
+            }
+
+            // Push to Scope Buffers
+            acHistory.push(vAcInstant);
+            if (acHistory.length > historyLength) acHistory.shift();
+
+            dcHistory.push(state.vCapInstant);
+            if (dcHistory.length > historyLength) dcHistory.shift();
+        }
+
+        // Draw Schematic Circuit
+        function drawSchematic() {
+            const w = canvasSchematic.width;
+            const h = canvasSchematic.height;
+            ctxS.clearRect(0, 0, w, h);
+
+            const vAcInstant = state.vPeak * Math.sin(2 * Math.PI * state.freq * state.time);
+            const isPos = vAcInstant >= 0;
+
+            // Layout Points
+            const acX = w * 0.14;
+            const acY = h * 0.5;
+
+            const bridgeX = w * 0.44;
+            const bridgeY = h * 0.5;
+            const r = Math.min(w, h) * 0.17;
+
+            const topY = bridgeY - r;
+            const botY = bridgeY + r;
+            const leftX = bridgeX - r;
+            const rightX = bridgeX + r;
+
+            const capX = w * 0.70;
+            const loadX = w * 0.88;
+
+            // Wire Connections
+            ctxS.lineWidth = 2.5;
+            ctxS.strokeStyle = '#334155';
+            ctxS.lineCap = 'round';
+            ctxS.lineJoin = 'round';
+
+            ctxS.beginPath();
+            // AC Source to Bridge
+            ctxS.moveTo(acX, acY - 26);
+            ctxS.lineTo(acX, topY);
+            ctxS.lineTo(leftX, topY);
+
+            ctxS.moveTo(acX, acY + 26);
+            ctxS.lineTo(acX, botY);
+            ctxS.lineTo(leftX, botY);
+
+            // Bridge Diamond Wires
+            ctxS.moveTo(leftX, topY); ctxS.lineTo(bridgeX, topY - 18); ctxS.lineTo(rightX, topY);
+            ctxS.moveTo(leftX, topY); ctxS.lineTo(bridgeX, botY + 18); ctxS.lineTo(rightX, botY);
+
+            // DC Output Wires
+            ctxS.moveTo(rightX, topY); ctxS.lineTo(loadX, topY);
+            ctxS.moveTo(rightX, botY); ctxS.lineTo(loadX, botY);
+
+            // Capacitor Wire Branch
+            ctxS.moveTo(capX, topY); ctxS.lineTo(capX, bridgeY - 22);
+            ctxS.moveTo(capX, bridgeY + 22); ctxS.lineTo(capX, botY);
+
+            // Load Resistor Wire Branch
+            ctxS.moveTo(loadX, topY); ctxS.lineTo(loadX, bridgeY - 30);
+            ctxS.moveTo(loadX, bridgeY + 30); ctxS.lineTo(loadX, botY);
+
+            ctxS.stroke();
+
+            // AC Source Circle
+            ctxS.beginPath();
+            ctxS.arc(acX, acY, 26, 0, Math.PI * 2);
+            ctxS.fillStyle = '#0f172a';
+            ctxS.fill();
+            ctxS.strokeStyle = '#38bdf8';
+            ctxS.lineWidth = 2;
+            ctxS.stroke();
+
+            // AC Sine Wave Icon inside
+            ctxS.beginPath();
+            ctxS.strokeStyle = '#38bdf8';
+            ctxS.lineWidth = 2;
+            for (let x = -12; x <= 12; x += 2) {
+                const y = Math.sin((x / 12) * Math.PI) * 8;
+                if (x === -12) ctxS.moveTo(acX + x, acY + y);
+                else ctxS.lineTo(acX + x, acY + y);
+            }
+            ctxS.stroke();
+
+            // Diode Drawing Helper
+            function drawDiode(x1, y1, x2, y2, isActive, name) {
+                const mx = (x1 + x2) / 2;
+                const my = (y1 + y2) / 2;
+                const angle = Math.atan2(y2 - y1, x2 - x1);
+
+                ctxS.save();
+                ctxS.translate(mx, my);
+                ctxS.rotate(angle);
+
+                if (isActive) {
+                    ctxS.shadowColor = '#fbbf24';
+                    ctxS.shadowBlur = 10;
+                }
+
+                ctxS.beginPath();
+                ctxS.fillStyle = isActive ? '#fbbf24' : '#334155';
+                ctxS.strokeStyle = isActive ? '#f59e0b' : '#64748b';
+                ctxS.lineWidth = 1.8;
+
+                ctxS.moveTo(-9, -9);
+                ctxS.lineTo(9, 0);
+                ctxS.lineTo(-9, 9);
+                ctxS.closePath();
+                ctxS.fill();
+                ctxS.stroke();
+
+                ctxS.beginPath();
+                ctxS.moveTo(9, -10);
+                ctxS.lineTo(9, 10);
+                ctxS.strokeStyle = isActive ? '#fbbf24' : '#64748b';
+                ctxS.lineWidth = 2.5;
+                ctxS.stroke();
+
+                ctxS.restore();
+
+                ctxS.fillStyle = isActive ? '#fbbf24' : '#94a3b8';
+                ctxS.font = '11px monospace';
+                ctxS.fillText(name, mx - 7, my - 14);
+            }
+
+            // Draw 4 Diodes
+            drawDiode(leftX, topY, bridgeX, topY - 18, isPos, "D1");
+            drawDiode(bridgeX, botY + 18, rightX, botY, isPos, "D4");
+
+            drawDiode(leftX, botY, bridgeX, botY + 18, !isPos, "D2");
+            drawDiode(bridgeX, topY - 18, rightX, topY, !isPos, "D3");
+
+            // Filter Capacitor C
+            ctxS.lineWidth = 2.5;
+            ctxS.strokeStyle = state.capEnabled ? '#10b981' : '#475569';
+            if (!state.capEnabled) ctxS.setLineDash([3, 3]);
+
+            ctxS.beginPath();
+            ctxS.moveTo(capX - 14, bridgeY - 22); ctxS.lineTo(capX + 14, bridgeY - 22);
+            ctxS.moveTo(capX - 14, bridgeY + 22); ctxS.lineTo(capX + 14, bridgeY + 22);
+            ctxS.stroke();
+            ctxS.setLineDash([]);
+
+            ctxS.fillStyle = state.capEnabled ? '#10b981' : '#64748b';
+            ctxS.font = '12px monospace';
+            ctxS.fillText('C', capX + 18, bridgeY + 4);
+
+            // Load Resistor R
+            ctxS.beginPath();
+            ctxS.strokeStyle = '#f59e0b';
+            ctxS.lineWidth = 2;
+            const ry = bridgeY - 30;
+            const rh = 60;
+            const zigzags = 6;
+            const stepY = rh / zigzags;
+            ctxS.moveTo(loadX, ry);
+            for (let i = 0; i < zigzags; i++) {
+                const off = (i % 2 === 0 ? 1 : -1) * 8;
+                ctxS.lineTo(loadX + off, ry + (i + 0.5) * stepY);
+            }
+            ctxS.lineTo(loadX, ry + rh);
+            ctxS.stroke();
+
+            ctxS.fillStyle = '#f59e0b';
+            ctxS.font = '12px monospace';
+            ctxS.fillText('R_load', loadX + 12, bridgeY + 4);
+
+            // 90-Degree Particle Motion
+            const speedScale = (state.freq / 50);
+            state.particles.forEach(p => {
+                p.progress = (p.progress + p.speed * speedScale) % 1;
+
+                const seg1 = (loadX - rightX);
+                const seg2 = seg1 + (botY - topY);
+                const totalDist = seg1 + (botY - topY) + seg1;
+
+                const cur = p.progress * totalDist;
+                let px = rightX, py = topY;
+
+                if (cur < seg1) {
+                    px = rightX + cur;
+                    py = topY;
+                } else if (cur < seg2) {
+                    px = loadX;
+                    py = topY + (cur - seg1);
+                } else {
+                    px = loadX - (cur - seg2);
+                    py = botY;
+                }
+
+                ctxS.beginPath();
+                ctxS.arc(px, py, 3, 0, Math.PI * 2);
+                ctxS.fillStyle = '#10b981';
+                ctxS.fill();
+            });
+        }
+
+        // Draw Oscilloscope Background Grid
+        function drawGrid(ctx, w, h) {
+            ctx.fillStyle = '#040507';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+
+            const cols = 8;
+            for (let i = 1; i < cols; i++) {
+                const x = (w / cols) * i;
+                ctx.beginPath();
+                ctx.moveTo(x, 0); ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+
+            const rows = 4;
+            for (let i = 1; i < rows; i++) {
+                const y = (h / rows) * i;
+                ctx.beginPath();
+                ctx.strokeStyle = (i === rows / 2) ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.04)';
+                ctx.moveTo(0, y); ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+        }
+
+        // Render AC Input Scope
+        function drawScopeAc() {
+            const w = canvasAc.width;
+            const h = canvasAc.height;
+            drawGrid(ctxAc, w, h);
+
+            const centerY = h / 2;
+            const scaleY = (h * 0.40) / 50;
+
+            ctxAc.beginPath();
+            ctxAc.lineWidth = 2;
+            ctxAc.strokeStyle = '#38bdf8';
+
+            const stepX = w / historyLength;
+
+            for (let i = 0; i < acHistory.length; i++) {
+                const x = i * stepX;
+                const y = centerY - (acHistory[i] * scaleY);
+                if (i === 0) ctxAc.moveTo(x, y);
+                else ctxAc.lineTo(x, y);
+            }
+            ctxAc.stroke();
+        }
+
+        // Render DC Output Scope (Capacitor Effect Dynamic & Visually Obvious)
+        function drawScopeDc() {
+            const w = canvasDc.width;
+            const h = canvasDc.height;
+            drawGrid(ctxDc, w, h);
+
+            const zeroY = h * 0.85;
+            const scaleY = (h * 0.70) / 50;
+
+            ctxDc.beginPath();
+            ctxDc.lineWidth = 2;
+            ctxDc.strokeStyle = '#10b981';
+
+            const stepX = w / historyLength;
+
+            for (let i = 0; i < dcHistory.length; i++) {
+                const x = i * stepX;
+                const y = zeroY - (dcHistory[i] * scaleY);
+                if (i === 0) ctxDc.moveTo(x, y);
+                else ctxDc.lineTo(x, y);
+            }
+            ctxDc.stroke();
+        }
+
+        // Update Average DC & Ripple Voltage Metrics
+        function updateMetrics() {
+            if (dcHistory.length === 0) return;
+
+            let minV = Infinity, maxV = -Infinity, sumV = 0;
+            for (let i = 0; i < dcHistory.length; i++) {
+                const v = dcHistory[i];
+                if (v < minV) minV = v;
+                if (v > maxV) maxV = v;
+                sumV += v;
+            }
+
+            const avgV = sumV / dcHistory.length;
+            const rippleV = maxV - minV;
+
+            mVdcVal.textContent = `${avgV.toFixed(1)} V`;
+            mVrippleVal.textContent = `${rippleV.toFixed(2)} V`;
+        }
+
+        // Main Animation Loop
+        let lastTime = performance.now();
+
+        function animate(now) {
+            const dt = Math.min((now - lastTime) / 1000, 0.033);
+            lastTime = now;
+
+            updatePhysics(dt);
+            drawSchematic();
+            drawScopeAc();
+            drawScopeDc();
+            updateMetrics();
+
+            requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
