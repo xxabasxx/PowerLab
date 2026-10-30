@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rectifier Simulator</title>
+<style>
+@import url('https://v1.fontapi.ir/css/Vazirmatn');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Vazirmatn',sans-serif;
+  background:#0f111a;color:#f8fafc;
+}
+.sim-wrap{
+  display:grid;grid-template-columns:1fr 270px;gap:10px;
+  height:100vh;padding:10px;
+}
+.canvas-area{display:flex;flex-direction:column;gap:8px;min-width:0}
+.circuit-box{
+  flex:1;min-height:200px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;overflow:hidden;
+}
+.circuit-box canvas{width:100%;height:100%;display:block}
+.scopes{display:grid;grid-template-columns:1fr 1fr;gap:8px;height:150px;min-height:120px}
+.scope-box{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;padding:6px;
+  display:flex;flex-direction:column;
+}
+.scope-box h4{font-size:11px;color:#94a3b8;text-align:center;margin-bottom:3px}
+.scope-box canvas{width:100%;flex:1;border-radius:6px;display:block}
+.sidebar{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:14px;overflow-y:auto;
+}
+.sidebar h3{
+  font-size:12px;color:#00f2fe;margin-bottom:10px;
+  padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.sidebar h3:not(:first-child){margin-top:14px}
+.ctrl{margin-bottom:10px}
+.ctrl label{
+  display:flex;justify-content:space-between;
+  font-size:11px;color:#94a3b8;margin-bottom:4px;
+}
+.ctrl label b{
+  color:#00f2fe;font-size:12px;
+  background:rgba(0,0,0,.3);padding:1px 6px;border-radius:4px;
+  min-width:44px;text-align:center;font-family:monospace;
+}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:4px;
+  background:rgba(255,255,255,.08);border-radius:2px;outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;
+  background:linear-gradient(135deg,#00f2fe,#4facfe);
+  border-radius:50%;cursor:pointer;
+}
+.mode-toggle{display:flex;gap:3px;margin-top:3px}
+.mode-toggle button{
+  flex:1;padding:5px 2px;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);color:#94a3b8;
+  border-radius:6px;font-family:inherit;font-size:10px;cursor:pointer;
+}
+.mode-toggle button.active{
+  background:rgba(0,242,254,.15);border-color:#00f2fe;color:#00f2fe;
+}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.metric{
+  background:rgba(15,17,26,.6);border:1px solid rgba(255,255,255,.06);
+  border-radius:6px;padding:6px;text-align:center;
+}
+.metric-val{font-size:13px;font-weight:800;color:#00f2fe;font-family:monospace}
+.metric-lbl{font-size:9px;color:#94a3b8;margin-top:1px}
+@media(max-width:800px){
+  .sim-wrap{grid-template-columns:1fr;grid-template-rows:1fr auto}
+  .sidebar{max-height:40vh}
+  .scopes{grid-template-columns:1fr;height:120px}
+}
+</style>
+</head>
+<body>
+<div class="sim-wrap">
+  <div class="canvas-area">
+    <div class="circuit-box"><canvas id="cC"></canvas></div>
+    <div class="scopes">
+      <div class="scope-box">
+        <h4 id="tAC">📺 ورودی AC</h4>
+        <canvas id="sAC"></canvas>
+      </div>
+      <div class="scope-box">
+        <h4 id="tDC">📺 خروجی DC</h4>
+        <canvas id="sDC"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar">
+    <h3 id="hP">⚙️ پارامترها</h3>
+    <div class="ctrl">
+      <label><span id="lV">ولتاژ پیک</span> <b id="vV">12</b></label>
+      <input type="range" id="sV" min="3" max="30" value="12">
+    </div>
+    <div class="ctrl">
+      <label><span id="lF">فرکانس</span> <b id="vF">50</b></label>
+      <input type="range" id="sF" min="1" max="100" value="50">
+    </div>
+    <div class="ctrl">
+      <label><span id="lC">خازن فیلتر</span> <b id="vC">470</b></label>
+      <input type="range" id="sC" min="0" max="4700" value="470" step="10">
+    </div>
+    <div class="ctrl">
+      <label><span id="lR">مقاومت بار</span> <b id="vR">100</b></label>
+      <input type="range" id="sR" min="10" max="500" value="100" step="5">
+    </div>
+    <div class="ctrl">
+      <label id="lFl">جهت جریان</label>
+      <div class="mode-toggle">
+        <button class="active" id="bC" onclick="setMode('conv')">+→−</button>
+        <button id="bE" onclick="setMode('elec')">−→+</button>
+      </div>
+    </div>
+    <h3 id="hM">📊 مقادیر</h3>
+    <div class="metrics">
+      <div class="metric"><div class="metric-val" id="m1">—</div><div class="metric-lbl" id="ml1">پیک V</div></div>
+      <div class="metric"><div class="metric-val" id="m2">—</div><div class="metric-lbl" id="ml2">DC V</div></div>
+      <div class="metric"><div class="metric-val" id="m3">—</div><div class="metric-lbl" id="ml3">ریپل</div></div>
+      <div class="metric"><div class="metric-val" id="m4">—</div><div class="metric-lbl" id="ml4">توان W</div></div>
+      <div class="metric"><div class="metric-val" id="m5">—</div><div class="metric-lbl" id="ml5">شارژ %</div></div>
+      <div class="metric"><div class="metric-val" id="m6">—</div><div class="metric-lbl" id="ml6">فرکانس</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ── LANG ── */
+var lang = (new URLSearchParams(location.search).get('lang')) || 'fa';
+var fa = lang === 'fa';
+document.documentElement.dir = fa ? 'rtl' : 'ltr';
+document.documentElement.lang = lang;
+
+if(!fa){
+  document.getElementById('tAC').textContent='📺 AC Input';
+  document.getElementById('tDC').textContent='📺 DC Output';
+  document.getElementById('hP').textContent='⚙️ Parameters';
+  document.getElementById('hM').textContent='📊 Live Values';
+  document.getElementById('lV').textContent='Peak V';
+  document.getElementById('lF').textContent='Freq Hz';
+  document.getElementById('lC').textContent='Cap µF';
+  document.getElementById('lR').textContent='Load Ω';
+  document.getElementById('lFl').textContent='Flow';
+  document.getElementById('bC').textContent='Conv +→−';
+  document.getElementById('bE').textContent='Elec −→+';
+  document.getElementById('ml1').textContent='Vpeak';
+  document.getElementById('ml2').textContent='Vdc';
+  document.getElementById('ml3').textContent='Ripple';
+  document.getElementById('ml4').textContent='Power';
+  document.getElementById('ml5').textContent='Cap%';
+  document.getElementById('ml6').textContent='Ripple f';
+}
+
+/* ── CANVAS SETUP ── */
+var cC = document.getElementById('cC');
+var sAC = document.getElementById('sAC');
+var sDC = document.getElementById('sDC');
+var ctx, ctxA, ctxD;
+
+function fitCanvas(c){
+  var r = c.parentElement.getBoundingClientRect();
+  var w = Math.floor(r.width);
+  var h = Math.floor(r.height);
+  if(w < 10) w = 400;
+  if(h < 10) h = 300;
+  c.width = w;
+  c.height = h;
+}
+
+function initCanvases(){
+  fitCanvas(cC); fitCanvas(sAC); fitCanvas(sDC);
+  ctx = cC.getContext('2d');
+  ctxA = sAC.getContext('2d');
+  ctxD = sDC.getContext('2d');
+}
+
+/* ── STATE ── */
+var Vac=12, freq=50, capUf=470, Rload=100;
+var flowMode='conv', Vcap=0, time=0;
+var VD=0.7, Rch=5, maxH=400;
+var acH=[], dcH=[], rcH=[];
+var NP=30, parts=[];
+
+for(var i=0;i<NP;i++) parts.push({pi:i%2, pr:Math.random(), sp:0.3+Math.random()*0.4});
+
+/* ── CONTROLS ── */
+document.getElementById('sV').oninput=function(){Vac=+this.value;document.getElementById('vV').textContent=Vac};
+document.getElementById('sF').oninput=function(){freq=+this.value;document.getElementById('vF').textContent=freq};
+document.getElementById('sC').oninput=function(){capUf=+this.value;document.getElementById('vC').textContent=capUf};
+document.getElementById('sR').oninput=function(){Rload=+this.value;document.getElementById('vR').textContent=Rload};
+
+window.setMode = function(m){
+  flowMode = m;
+  document.getElementById('bC').className = m==='conv'?'active':'';
+  document.getElementById('bE').className = m==='elec'?'active':'';
+};
+
+/* ── LAYOUT ── */
+function getL(){
+  var w=cC.width, h=cC.height;
+  if(w<50||h<50) return null;
+  var cx=w*0.38, cy=h*0.5, bs=Math.min(w,h)*0.14;
+  return {w:w,h:h,cx:cx,cy:cy,bs:bs,
+    Nt:{x:cx,y:cy-bs}, Nb:{x:cx,y:cy+bs},
+    Nl:{x:cx-bs,y:cy}, Nr:{x:cx+bs,y:cy},
+    acX:w*0.1, acY:cy, capX:w*0.67, lampX:w*0.87,
+    wtY:cy-bs-35, wbY:cy+bs+35,
+    atY:cy-bs-5, abY:cy+bs+5
+  };
+}
+
+/* ── DRAW HELPERS ── */
+function wire(pts,c,lw){
+  if(!ctx) return;
+  ctx.beginPath(); ctx.strokeStyle=c||'#333'; ctx.lineWidth=lw||2;
+  ctx.moveTo(pts[0].x,pts[0].y);
+  for(var i=1;i<pts.length;i++) ctx.lineTo(pts[i].x,pts[i].y);
+  ctx.stroke();
+}
+
+function drawDiode(from,to,on,label){
+  var dx=to.x-from.x, dy=to.y-from.y;
+  var len=Math.sqrt(dx*dx+dy*dy);
+  if(len<1) return;
+  var ux=dx/len, uy=dy/len;
+  var mx=(from.x+to.x)/2, my=(from.y+to.y)/2, sz=9;
+  ctx.save(); ctx.translate(mx,my); ctx.rotate(Math.atan2(dy,dx));
+  ctx.beginPath(); ctx.moveTo(sz,0); ctx.lineTo(-sz,-sz*0.7); ctx.lineTo(-sz,sz*0.7); ctx.closePath();
+  ctx.fillStyle=on?'#00f2fe':'#1a1f2e'; ctx.fill();
+  ctx.strokeStyle=on?'#4facfe':'#2a3040'; ctx.lineWidth=2; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(sz,-sz*0.7); ctx.lineTo(sz,sz*0.7);
+  ctx.strokeStyle=on?'#4facfe':'#2a3040'; ctx.lineWidth=2.5; ctx.stroke();
+  if(on){ctx.shadowColor='#00f2fe';ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0}
+  ctx.restore();
+  ctx.fillStyle=on?'#4facfe':'#555'; ctx.font='bold 10px Vazirmatn'; ctx.textAlign='center';
+  ctx.fillText(label, mx+uy*14, my-ux*14+4);
+}
+
+function drawAC(l,vac,phase){
+  var x=l.acX, y=l.acY, r=24;
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle='rgba(15,17,26,.9)'; ctx.fill();
+  ctx.strokeStyle='#00f2fe'; ctx.lineWidth=2; ctx.stroke();
+  ctx.beginPath(); ctx.strokeStyle='#4facfe'; ctx.lineWidth=1.5;
+  for(var i=-12;i<=12;i++){
+    var px=x+i, py=y-Math.sin(i*0.5+phase)*6;
+    i===-12?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  var p=vac>0?1:-1;
+  ctx.fillStyle='#4facfe'; ctx.font='bold 11px Vazirmatn'; ctx.textAlign='center';
+  ctx.fillText(p>0?'+':'−', x+r+10, y-l.bs+14);
+  ctx.fillText(p>0?'−':'+', x+r+10, y+l.bs-6);
+}
+
+function drawCap(l,v,mx){
+  var x=l.capX, y=l.acY, gap=6, h=26;
+  var ch=Math.min(v/Math.max(mx,1),1);
+  ctx.strokeStyle='#00f2fe'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(x-gap,y-h); ctx.lineTo(x-gap,y+h); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x+gap,y-h); ctx.lineTo(x+gap,y+h); ctx.stroke();
+  if(ch>0.01){
+    ctx.fillStyle='rgba(0,242,254,'+(ch*0.2)+')';
+    ctx.fillRect(x-gap+2,y-h+2,gap*2-4,h*2-4);
+  }
+  ctx.fillStyle='#4facfe'; ctx.font='bold 10px Vazirmatn'; ctx.textAlign='center';
+  ctx.fillText(capUf+'µF', x, y+h+14);
+  ctx.fillText('+', x-gap-7, y-h+5);
+}
+
+function drawLamp(l,pw){
+  var x=l.lampX, y=l.acY, r=16;
+  var br=Math.min(pw/5,1);
+  if(br>0.05){
+    var g=ctx.createRadialGradient(x,y,0,x,y,r*3);
+    g.addColorStop(0,'rgba(226,177,112,'+(br*0.35)+')');
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.fillRect(x-r*3,y-r*3,r*6,r*6);
+  }
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle='rgba(226,177,112,'+(br*0.5)+')'; ctx.fill();
+  ctx.strokeStyle='#e2b170'; ctx.lineWidth=2; ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x-6,y-6); ctx.lineTo(x+6,y+6);
+  ctx.moveTo(x+6,y-6); ctx.lineTo(x-6,y+6);
+  ctx.strokeStyle='rgba(255,255,255,'+(0.2+br*0.5)+')'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle='#e2b170'; ctx.font='bold 10px Vazirmatn'; ctx.textAlign='center';
+  ctx.fillText(Rload+'Ω', x, y+r+14);
+}
+
+function buildPaths(l,vac){
+  var isP=vac>0;
+  var acT={x:l.acX+26,y:l.atY}, acB={x:l.acX+26,y:l.abY};
+  var cT={x:l.capX,y:l.wtY}, cB={x:l.capX,y:l.wbY};
+  var lT={x:l.lampX,y:l.wtY}, lB={x:l.lampX,y:l.wbY};
+  if(flowMode==='conv'){
+    return isP?[[acT,l.Nt,cT,lT],[lB,cB,l.Nb,acB]]:[[acB,l.Nt,cT,lT],[lB,cB,l.Nb,acT]];
+  } else {
+    return isP?[[acB,l.Nb,cB,lB],[lT,cT,l.Nt,acT]]:[[acT,l.Nb,cB,lB],[lT,cT,l.Nt,acB]];
+  }
+}
+
+function interp(pts,t){
+  t=Math.max(0,Math.min(1,t));
+  var n=pts.length-1;
+  var s=Math.min(Math.floor(t*n),n-1), lt=t*n-s;
+  return {x:pts[s].x+(pts[s+1].x-pts[s].x)*lt, y:pts[s].y+(pts[s+1].y-pts[s].y)*lt};
+}
+
+/* ── SCOPE DRAW ── */
+function drawScope(c,cv,data,mx,col,center){
+  var w=cv.width, h=cv.height;
+  if(w<10||h<10) return;
+  c.fillStyle='#080a12'; c.fillRect(0,0,w,h);
+  c.strokeStyle='rgba(0,242,254,.06)'; c.lineWidth=1;
+  for(var y=0;y<h;y+=20){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke()}
+  for(var x=0;x<w;x+=30){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}
+  if(center){c.strokeStyle='rgba(0,242,254,.12)';c.beginPath();c.moveTo(0,h/2);c.lineTo(w,h/2);c.stroke()}
+  if(data.length<2) return;
+  var amp=center?h*0.38:h*0.8, base=center?h/2:h-6;
+  c.beginPath(); c.strokeStyle=col; c.lineWidth=1.5;
+  c.shadowColor=col; c.shadowBlur=3;
+  for(var i=0;i<data.length;i++){
+    var px=(i/(data.length-1))*w;
+    var py=base-(data[i]/Math.max(mx,1))*amp;
+    i===0?c.moveTo(px,py):c.lineTo(px,py);
+  }
+  c.stroke(); c.shadowBlur=0;
+}
+
+function drawScopeDC(c,cv,dc,rect,mx){
+  var w=cv.width, h=cv.height;
+  if(w<10||h<10) return;
+  c.fillStyle='#080a12'; c.fillRect(0,0,w,h);
+  c.strokeStyle='rgba(0,242,254,.06)'; c.lineWidth=1;
+  for(var y=0;y<h;y+=20){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke()}
+  var amp=h*0.8, base=h-6;
+  if(rect.length>1){
+    c.beginPath(); c.strokeStyle='rgba(0,242,254,.18)'; c.lineWidth=1; c.setLineDash([3,3]);
+    for(var i=0;i<rect.length;i++){
+      var px=(i/(rect.length-1))*w, py=base-(rect[i]/Math.max(mx,1))*amp;
+      i===0?c.moveTo(px,py):c.lineTo(px,py);
+    }
+    c.stroke(); c.setLineDash([]);
+  }
+  if(dc.length>1){
+    c.beginPath(); c.strokeStyle='#e2b170'; c.lineWidth=2;
+    c.shadowColor='#e2b170'; c.shadowBlur=3;
+    for(var i=0;i<dc.length;i++){
+      var px=(i/(dc.length-1))*w, py=base-(dc[i]/Math.max(mx,1))*amp;
+      i===0?c.moveTo(px,py):c.lineTo(px,py);
+    }
+    c.stroke(); c.shadowBlur=0;
+    c.lineTo(w,base); c.lineTo(0,base); c.closePath();
+    c.fillStyle='rgba(226,177,112,.05)'; c.fill();
+  }
+  c.fillStyle='#e2b170'; c.font='9px Vazirmatn'; c.textAlign='left';
+  c.fillText(fa?'با خازن':'With Cap',4,12);
+  c.fillStyle='rgba(0,242,254,.4)';
+  c.fillText(fa?'بدون خازن':'No Cap',4,24);
+}
+
+/* ── MAIN LOOP ── */
+var lastT=0, started=false;
+
+function frame(now){
+  requestAnimationFrame(frame);
+  if(!started){lastT=now; started=true; return}
+  var rawDt=(now-lastT)/1000;
+  lastT=now;
+  var dt=Math.min(rawDt,0.05);
+  if(dt<=0) return;
+
+  /* Physics */
+  var period=1/freq;
+  var physDt=period/500;
+  var steps=Math.max(1,Math.ceil(dt/physDt));
+  for(var s=0;s<steps;s++){
+    time+=physDt;
+    var va=Vac*Math.sin(2*Math.PI*freq*time);
+    var vr=Math.max(0,Math.abs(va)-2*VD);
+    var C=capUf*1e-6;
+    if(C>0){
+      if(vr>Vcap) Vcap+=(vr-Vcap)*(1-Math.exp(-physDt/(Rch*C)));
+      else Vcap*=Math.exp(-physDt/(Rload*C));
+    } else { Vcap=vr; }
+  }
+
+  var vac=Vac*Math.sin(2*Math.PI*freq*time);
+  var vrect=Math.max(0,Math.abs(vac)-2*VD);
+  var isP=vac>0, on=Math.abs(vac)>1.4;
+
+  acH.push(vac); dcH.push(Vcap); rcH.push(vrect);
+  if(acH.length>maxH){acH.shift();dcH.shift();rcH.shift()}
+
+  /* Draw */
+  var l=getL();
+  if(!l) return;
+  ctx.clearRect(0,0,l.w,l.h);
+  ctx.fillStyle='#0f111a'; ctx.fillRect(0,0,l.w,l.h);
+
+  ctx.strokeStyle='rgba(0,242,254,.03)'; ctx.lineWidth=1;
+  for(var x=0;x<l.w;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,l.h);ctx.stroke()}
+  for(var y=0;y<l.h;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(l.w,y);ctx.stroke()}
+
+  var wc=on?'rgba(0,242,254,.3)':'#252830';
+  var wo='#00f2fe';
+
+  wire([{x:l.acX+26,y:l.atY},{x:l.Nl.x,y:l.atY},{x:l.Nl.x,y:l.Nl.y}],on?wo:wc);
+  wire([{x:l.acX+26,y:l.abY},{x:l.Nl.x-16,y:l.abY},{x:l.Nl.x-16,y:l.Nl.y}],on?wo:wc);
+  wire([l.Nt,{x:l.Nt.x,y:l.wtY}],on?wo:wc);
+  wire([l.Nb,{x:l.Nb.x,y:l.wbY}],on?wo:wc);
+  wire([{x:l.Nt.x,y:l.wtY},{x:l.capX,y:l.wtY},{x:l.lampX,y:l.wtY}],on?wo:wc);
+  wire([{x:l.Nb.x,y:l.wbY},{x:l.capX,y:l.wbY},{x:l.lampX,y:l.wbY}],on?wo:wc);
+  wire([{x:l.capX,y:l.wtY},{x:l.capX,y:l.acY-26}],on?wo:wc);
+  wire([{x:l.capX,y:l.wbY},{x:l.capX,y:l.acY+26}],on?wo:wc);
+  wire([{x:l.lampX,y:l.wtY},{x:l.lampX,y:l.acY-16}],on?wo:wc);
+  wire([{x:l.lampX,y:l.wbY},{x:l.lampX,y:l.acY+16}],on?wo:wc);
+
+  drawDiode(l.Nl,l.Nt,on&&isP,'D1');
+  drawDiode(l.Nr,l.Nt,on&&!isP,'D2');
+  drawDiode(l.Nb,l.Nl,on&&!isP,'D3');
+  drawDiode(l.Nb,l.Nr,on&&isP,'D4');
+  drawAC(l,vac,2*Math.PI*freq*time);
+  drawCap(l,Vcap,Vac);
+  var power=Vcap*Vcap/Rload;
+  drawLamp(l,power);
+
+  if(on){
+    var paths=buildPaths(l,vac);
+    for(var i=0;i<parts.length;i++){
+      var p=parts[i];
+      p.pr+=p.sp*dt*2; if(p.pr>1) p.pr-=1;
+      var path=paths[p.pi%paths.length];
+      if(!path) continue;
+      var pos=interp(path,p.pr);
+      ctx.beginPath(); ctx.arc(pos.x,pos.y,2.5,0,Math.PI*2);
+      ctx.fillStyle=flowMode==='elec'?'#4facfe':'#00f2fe';
+      ctx.shadowColor='#00f2fe'; ctx.shadowBlur=5; ctx.fill(); ctx.shadowBlur=0;
+    }
+  }
+
+  ctx.fillStyle='#94a3b8'; ctx.font='bold 11px Vazirmatn'; ctx.textAlign='center';
+  ctx.fillText(fa?'AC ورودی':'AC Input', l.acX, l.acY+48);
+  ctx.fillText(fa?'خازن فیلتر':'Filter Cap', l.capX, l.acY-44);
+  ctx.fillText(fa?'بار':'Load', l.lampX, l.acY-32);
+
+  drawScope(ctxA,sAC,acH,Vac,'#00f2fe',true);
+  drawScopeDC(ctxD,sDC,dcH,rcH,Vac);
+
+  var vpo=Math.max(0,Vac-1.4);
+  var vdc=capUf>0?Vcap:(2*vpo/Math.PI);
+  var rip=capUf>0&&dcH.length>50?Math.max.apply(null,dcH.slice(-100))-Math.min.apply(null,dcH.slice(-100)):vpo*0.5;
+  document.getElementById('m1').textContent=Vac.toFixed(1);
+  document.getElementById('m2').textContent=vdc.toFixed(1);
+  document.getElementById('m3').textContent=rip.toFixed(2);
+  document.getElementById('m4').textContent=power.toFixed(2);
+  document.getElementById('m5').textContent=Vac>0?Math.round(Vcap/Vac*100):0;
+  document.getElementById('m6').textContent=(freq*2)+'Hz';
+}
+
+/* ── INIT ── */
+function start(){
+  initCanvases();
+  requestAnimationFrame(frame);
+}
+
+if(document.readyState==='complete') start();
+else window.addEventListener('load', start);
+
+var resizeTimer;
+window.addEventListener('resize',function(){
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(initCanvases,100);
+});
+
+})();
+</script>
+</body>
+</html>

@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABAS SOFT | Power Electronics Lab</title>
+    <title>آزمایشگاه مجازی الکترونیک قدرت</title>
+    
+    <!-- فونت‌ها -->
+    <link href="https://v1.fontapi.ir/css/Vazirmatn" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://v1.fontapi.ir/css/Vazirmatn');
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
-
         :root {
             --bg-dark: #0f111a;
             --bg-glow: radial-gradient(circle at 50% 0%, #1e293b, #0f111a 70%);
@@ -21,816 +23,1252 @@
             --success-color: #10b981;
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Vazirmatn', 'Poppins', sans-serif;
-            background: var(--bg-glow);
-            background-color: var(--bg-dark);
+            font-family: 'Vazirmatn', sans-serif;
+            background: var(--bg-dark);
+            background-image: var(--bg-glow);
             color: var(--text-main);
-            min-height: 100vh;
             display: flex;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-        }
-
-        /* Glassmorphism Panel */
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
             height: 100vh;
-            position: fixed;
-            top: 0;
-            right: 0;
-            padding: 30px 20px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            z-index: 10;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
         }
 
-        /* حالت مخفی شدن کشویی سایدبار */
-        .sidebar.collapsed {
-            transform: translateX(100%);
-        }
-        html[dir="ltr"] .sidebar.collapsed {
-            transform: translateX(-100%);
+        body.en {
+            direction: ltr;
+            font-family: 'Poppins', 'Vazirmatn', sans-serif;
         }
 
-        /* Logo Branding & Icon */
-        .brand-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 40px;
-            position: relative; /* برای دکمه جمع‌کردن */
-        }
-
-        /* دکمه کشویی جمع کردن منو */
-        .collapse-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            color: var(--text-muted);
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            left: -10px;
-            transition: all 0.3s ease;
-        }
-        html[dir="ltr"] .collapse-btn {
-            left: auto;
-            right: -10px;
-        }
-        .collapse-btn:hover {
-            background: rgba(0, 242, 254, 0.1);
-            color: var(--neon-accent);
-            border-color: var(--neon-accent);
-        }
-        /* تنظیم جهت آیکون جمع کردن بر اساس زبان */
-        html[dir="rtl"] #collapse-icon { transform: rotate(0deg); }
-        html[dir="ltr"] #collapse-icon { transform: rotate(180deg); }
-
-        .brand-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: rgba(15, 17, 26, 0.6);
-            border: 1.5px solid var(--logo-gold);
-            box-shadow: 0 0 12px rgba(226, 177, 112, 0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .brand-icon svg {
-            width: 24px;
-            height: 24px;
-            stroke: var(--logo-gold);
-        }
-
-        .brand-text {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 22px;
-            letter-spacing: 1.5px;
-            color: #fff;
-        }
-        .brand-text span {
-            background: linear-gradient(to right, var(--neon-accent), var(--neon-accent-2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .menu-title {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .nav-btn {
-            background: transparent;
-            border: 1px solid transparent;
-            color: var(--text-main);
-            padding: 14px 18px;
-            margin-bottom: 10px;
-            border-radius: 12px;
-            font-family: inherit;
-            font-size: 15px;
-            text-align: start;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--glass-border);
-            transform: translateX(-5px);
-        }
-        .nav-btn.active {
-            background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.05));
-            border-color: var(--neon-accent-2);
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
-        }
-
-        .nav-btn.about-link {
-            margin-top: auto;
-            border-color: rgba(226, 177, 112, 0.3);
-            color: var(--logo-gold);
-        }
-        .nav-btn.about-link:hover {
-            background: rgba(226, 177, 112, 0.1);
-            border-color: var(--logo-gold);
-        }
-
-        /* Main Content Area */
-        .main-content {
-            margin-right: 280px;
-            padding: 30px;
-            width: 100%;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            transition: margin 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        /* ---------------- Sidebar ---------------- */
+        #sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: var(--glass-bg);
+            border-left: 1px solid var(--glass-border);
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px 15px;
+            transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
+            position: relative;
+            z-index: 50;
         }
         
-        /* حالت تمام عرض شدن محتوا هنگام جمع بودن منو */
-        .main-content.expanded {
-            margin-right: 0 !important;
-        }
-        html[dir="ltr"] .main-content.expanded {
-            margin-left: 0 !important;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
-        }
-        .page-title {
-            font-size: 22px;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        /* دکمه باز کردن منو (همبرگری) در هدر */
-        .expand-btn {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--neon-accent);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: none; /* در حالت عادی مخفی است */
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        .expand-btn:hover {
-            background: rgba(0, 242, 254, 0.1);
-            border-color: var(--neon-accent);
-            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
-        }
-
-        .header-controls {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        /* Fullscreen Button */
-        .fullscreen-btn {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--neon-accent);
-            padding: 8px 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-        }
-        .fullscreen-btn:hover {
-            background: rgba(0, 242, 254, 0.1);
-            border-color: var(--neon-accent);
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
-            transform: scale(1.03);
-        }
-
-        /* Language Switch Button */
-        .lang-switch {
-            display: flex;
-            gap: 5px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            padding: 5px;
-            border-radius: 30px;
-        }
-        .lang-switch button {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 8px 18px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-family: 'Poppins', 'Vazirmatn', sans-serif;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-        .lang-switch button.active {
-            background: var(--neon-accent-2);
-            color: #fff;
-            box-shadow: 0 0 10px rgba(79, 172, 254, 0.4);
-        }
-
-        /* Simulator iFrame Container */
-        .iframe-container {
-            width: 100%;
-            flex-grow: 1;
-            min-height: 560px;
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-        }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: transparent;
-        }
-        .iframe-container:fullscreen {
-            width: 100vw;
-            height: 100vh;
+        body.en #sidebar { border-left: none; border-right: 1px solid var(--glass-border); }
+        
+        #sidebar.collapsed {
+            width: 0;
+            min-width: 0;
             padding: 0;
-            border-radius: 0;
-            background: #0f111a;
+            overflow: hidden;
+            border: none;
         }
 
-        /* Educational Tabs Section */
-        .educational-panel {
-            padding: 25px;
-        }
-        .edu-tabs {
-            display: flex;
-            gap: 10px;
-            border-bottom: 1px solid var(--glass-border);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-        }
-        .edu-tab-btn {
-            background: transparent;
-            border: 1px solid var(--glass-border);
-            color: var(--text-muted);
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 14px;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-        }
-        .edu-tab-btn:hover {
-            color: var(--text-main);
-            border-color: var(--neon-accent-2);
-        }
-        .edu-tab-btn.active {
-            background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.1));
-            color: var(--neon-accent);
-            border-color: var(--neon-accent);
-        }
-        .edu-content {
-            line-height: 1.8;
-            color: #e2e8f0;
-            font-size: 15px;
-        }
-        .edu-content h3 { color: var(--neon-accent); margin-top: 0; }
-        .edu-content ul { padding-right: 20px; }
-        html[dir="ltr"] .edu-content ul { padding-right: 0; padding-left: 20px; }
-        .edu-content code {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 3px 8px;
-            border-radius: 6px;
-            color: var(--neon-accent);
-            font-family: monospace;
-        }
-
-        /* About Us & Support Section (Hidden by Default) */
-        .about-panel {
-            padding: 30px;
-            display: none; 
-        }
-        .about-header {
+        .sidebar-header {
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border);
             margin-bottom: 15px;
         }
-        .about-header h2 {
-            margin: 0;
-            font-size: 20px;
-            color: var(--logo-gold);
-        }
-        .about-desc {
-            line-height: 1.9;
-            color: #cbd5e1;
-            font-size: 15px;
-            margin-bottom: 25px;
-        }
-
-        /* Copyable Cards */
-        .copy-cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-        }
-
-        .copy-card {
-            background: rgba(15, 17, 26, 0.6);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            padding: 16px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .copy-card:hover {
-            border-color: var(--neon-accent-2);
-            box-shadow: 0 0 15px rgba(79, 172, 254, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .copy-card-title {
-            font-size: 13px;
-            color: var(--text-muted);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .copy-card-value {
-            font-family: monospace;
-            font-size: 14px;
-            color: var(--neon-accent);
-            word-break: break-all;
+        
+        .sidebar-header h2 {
             display: flex;
             align-items: center;
-            justify-content: space-between;
             gap: 10px;
+            color: var(--logo-gold);
+            font-size: 1.1rem;
+            text-shadow: 0 0 10px rgba(226,177,112,0.3);
         }
 
-        .copy-card-badge {
-            font-family: 'Poppins', 'Vazirmatn', sans-serif;
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.08);
+        .close-sidebar-btn {
+            background: none;
+            border: none;
             color: var(--text-muted);
-            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .close-sidebar-btn:hover { color: var(--text-main); }
+
+        /* استایل دسته‌بندی‌ها (آکاردئون) */
+        .cat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 8px;
+            cursor: pointer;
+            color: var(--neon-accent);
+            font-size: 0.85rem;
+            font-weight: 700;
+            border-radius: 6px;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        .cat-header:hover { background: rgba(0, 242, 254, 0.05); }
+        .cat-header .arrow { transition: transform 0.3s ease; font-size: 0.7rem; }
+        .cat-header.collapsed .arrow { transform: rotate(-90deg); }
+        body.en .cat-header.collapsed .arrow { transform: rotate(90deg); }
+        
+        .cat-items {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            max-height: 800px;
+        }
+        .cat-items.collapsed { max-height: 0; }
+
+        .nav-btn {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; padding: 10px 12px; margin: 4px 0;
+            background: transparent; border: 1px solid transparent;
+            color: var(--text-muted); font-size: 0.8rem; border-radius: 8px;
+            cursor: pointer; font-family: inherit; text-align: right; transition: 0.2s;
+        }
+        body.en .nav-btn { text-align: left; }
+        .nav-btn:hover { background: rgba(0,242,254,0.08); color: var(--text-main); }
+        .nav-btn.active {
+            background: rgba(0,242,254,0.12); border-color: var(--neon-accent);
+            color: var(--neon-accent); box-shadow: 0 0 12px rgba(0,242,254,0.1);
         }
 
-        .copy-card.copied {
-            border-color: var(--success-color);
-            background: rgba(16, 185, 129, 0.08);
-        }
-        .copy-card.copied .copy-card-badge {
-            background: var(--success-color);
-            color: #fff;
+        .badge { font-size: 0.6rem; padding: 2px 6px; border-radius: 8px; font-weight: 700; }
+        .badge-sim { background: rgba(16,185,129,0.2); color: var(--success-color); }
+        .badge-soon { background: rgba(226,177,112,0.2); color: var(--logo-gold); }
+
+        #btn-about {
+            margin-top: 20px;
+            border-top: 1px solid var(--glass-border);
+            border-radius: 0;
+            padding-top: 15px;
+            justify-content: center;
         }
 
-        /* Responsive Breakpoints */
-        @media (max-width: 900px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                padding: 20px;
-                border-radius: 0 0 20px 20px;
-            }
-            .main-content {
-                margin-right: 0;
-                margin-left: 0;
-                padding: 15px;
-            }
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-            .nav-btn:hover { transform: translateY(-2px); }
-            .nav-btn.about-link { margin-top: 10px; }
-            /* در موبایل دکمه‌های کشویی نیاز نیست مخفی می‌شوند */
-            .collapse-btn, .expand-btn { display: none !important; }
+        /* ---------------- Main Content ---------------- */
+        #main-content {
+            flex: 1; padding: 20px 30px; overflow-y: auto; height: 100vh; position: relative;
         }
 
-        /* LTR Styles for English */
-        html[dir="ltr"] .sidebar { right: auto; left: 0; }
-        html[dir="ltr"] .main-content { margin-right: 0; margin-left: 280px; }
-        html[dir="ltr"] .nav-btn:hover { transform: translateX(5px); }
-        @media (max-width: 900px) { html[dir="ltr"] .main-content { margin-left: 0; } }
+        /* هدر - حل مشکل همبرگری */
+        header {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 15px; margin-bottom: 20px;
+        }
+        
+        .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+        
+        .exp-btn {
+            display: none; background: var(--glass-bg); border: 1px solid var(--glass-border);
+            color: var(--neon-accent); padding: 8px 12px; border-radius: 8px;
+            cursor: pointer; font-size: 1.2rem; transition: 0.2s;
+        }
+        .exp-btn:hover { border-color: var(--neon-accent); background: rgba(0,242,254,0.1); }
+        #sidebar.collapsed ~ #main-content .exp-btn { display: flex; }
+
+        .main-title {
+            font-size: 1.3rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--neon-accent), var(--neon-accent-2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .header-left { display: flex; gap: 10px; flex-wrap: wrap; }
+        .header-left button {
+            padding: 8px 15px; border-radius: 8px; background: var(--glass-bg);
+            border: 1px solid var(--glass-border); color: var(--text-muted);
+            cursor: pointer; font-family: inherit; font-size: 0.8rem; transition: 0.2s;
+        }
+        .header-left button:hover { border-color: var(--neon-accent); color: var(--neon-accent); }
+        .header-left button.active-lang { background: rgba(0,242,254,0.15); border-color: var(--neon-accent); color: var(--neon-accent); }
+
+        /* ---------------- Containers ---------------- */
+        .glass-panel {
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 20px; margin-bottom: 20px; backdrop-filter: blur(10px);
+        }
+
+        /* ---------------- Simulator Fullscreen logic ---------------- */
+        #fs-container {
+            width: 100%; height: 500px; border-radius: 12px; overflow: hidden;
+            border: 1px solid var(--glass-border); margin-bottom: 20px; background: #0a0a0a;
+        }
+        #fs-container:fullscreen { width: 100vw; height: 100vh; border: none; border-radius: 0; }
+        #fs-container:-webkit-full-screen { width: 100vw; height: 100vh; border: none; border-radius: 0; }
+        
+        #sim-frame { width: 100%; height: 100%; border: none; }
+
+        /* ---------------- Educational Tabs ---------------- */
+        .tabs-container {
+            display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;
+        }
+        .tab-btn {
+            padding: 8px 15px; border-radius: 8px 8px 0 0; background: transparent;
+            border: 1px solid transparent; border-bottom: none; color: var(--text-muted);
+            cursor: pointer; font-family: inherit; font-size: 0.85rem; transition: 0.2s;
+        }
+        .tab-btn:hover { color: var(--text-main); }
+        .tab-btn.active { background: rgba(0,242,254,0.1); border-color: var(--glass-border); color: var(--neon-accent); }
+        
+        #edu-content-area { line-height: 1.9; font-size: 0.9rem; }
+        #edu-content-area h3 { color: var(--neon-accent); margin-bottom: 10px; font-size: 1.05rem; }
+        #edu-content-area ul { padding-right: 20px; }
+        body.en #edu-content-area ul { padding-right: 0; padding-left: 20px; }
+        #edu-content-area li { margin-bottom: 6px; color: var(--text-muted); }
+        #edu-content-area code {
+            background: rgba(0,242,254,0.1); color: var(--neon-accent);
+            padding: 2px 6px; border-radius: 4px; font-family: monospace; direction: ltr; display: inline-block;
+        }
+
+        /* ---------------- Calculator Section ---------------- */
+        .calc-wrapper { display: flex; gap: 20px; flex-wrap: wrap; }
+        .calc-panel { flex: 1; min-width: 280px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 20px; border: 1px solid var(--glass-border); }
+        .calc-panel h4 { color: var(--success-color); margin-bottom: 20px; font-size: 1rem; text-align: center; }
+        .input-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .input-group label { font-size: 0.85rem; color: var(--text-muted); }
+        .input-group input {
+            width: 100px; padding: 8px; border-radius: 6px; border: 1px solid var(--glass-border);
+            background: var(--glass-bg); color: var(--text-main); font-family: monospace; outline: none; text-align: center; transition: 0.3s;
+        }
+        .input-group input:focus { border-color: var(--neon-accent); box-shadow: 0 0 10px rgba(0,242,254,0.2); }
+        
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--glass-border); }
+        .result-row:last-child { border-bottom: none; }
+        .result-label { font-size: 0.85rem; color: var(--text-muted); }
+        .result-value { font-family: monospace; font-size: 1.2rem; color: var(--neon-accent); font-weight: bold; transition: 0.3s; }
+        .result-value.flash { transform: scale(1.15); color: #fff; text-shadow: 0 0 15px var(--success-color); }
+
+        /* ---------------- Coming Soon / About ---------------- */
+        #coming-soon-section { text-align: center; padding: 70px 20px; display: none; flex-direction: column; align-items: center; }
+        #coming-soon-section h2 { color: var(--logo-gold); margin: 15px 0 10px; font-size: 1.2rem; }
+        
+        #about-section { display: none; }
+        .copy-box {
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+            background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border); padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s;
+        }
+        .copy-box:hover { border-color: var(--neon-accent); background: rgba(0,242,254,0.03); }
+        .copy-box code { color: var(--neon-accent); direction: ltr; font-family: monospace; }
+        .copy-btn-txt { font-size: 0.75rem; background: rgba(0, 242, 254, 0.1); padding: 4px 10px; border-radius: 4px; color: var(--neon-accent); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        
+        @media(max-width: 768px) {
+            #sidebar { position: fixed; right: 0; top: 0; z-index: 200; }
+            body.en #sidebar { right: auto; left: 0; }
+        }
+
+/* --- تنظیم دقیق و وسط‌چین لوگو و نام در سیدبار --- */
+.sidebar-header {
+    padding: 12px 10px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important; /* وسط‌چین کردن کل کانتینر */
+    align-items: center !important;
+    box-sizing: border-box !important;
+}
+
+.sidebar-header h2 {
+    display: inline-flex !important;
+    flex-direction: row !important;   /* ابتدا لوگو (سمت چپ)، سپس متن (سمت راست) */
+    align-items: center !important;
+    justify-content: center !important; /* وسط‌چین کردن لوگو و متن نسبت به هم */
+    direction: ltr !important;        /* حفظ ترتیب چپ‌به‌راست کلمات انگلیسی */
+    gap: 8px !important;              /* فاصله متناسب بین لوگو و متن */
+    margin: 0 auto !important;
+    padding: 0 !important;
+    white-space: nowrap !important;  /* قفل کردن در یک خط */
+}
+
+.sidebar-header svg, 
+.sidebar-header .header-logo {
+    width: 28px !important;          /* ابعاد شکیل لوگو */
+    height: 28px !important;
+    flex-shrink: 0 !important;
+}
+
+.sidebar-header span {
+    white-space: nowrap !important;
+    font-size: 1.05rem !important;   /* فونت خوانا و استاندارد */
+    font-weight: 700 !important;
+    color: #00f2fe !important;
+}
+
+
+
+
+
     </style>
 </head>
 <body>
 
     <!-- Sidebar -->
-    <div class="sidebar glass-panel">
-        <div class="brand-container">
-            <!-- دکمه جمع کردن منو -->
-            <button class="collapse-btn" onclick="toggleSidebar()" title="بستن منو">
-                <svg id="collapse-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-            </button>
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <h2>
+               
 
-            <div class="brand-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 12h-4l-3 8L9 4l-3 8H2"/>
-                </svg>
-            </div>
-            <div class="brand-text">ABAS <span>SOFT</span></div>
+
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect x="6" y="6" width="116" height="116" rx="30" fill="#141824" stroke="#e2b170" stroke-width="5" stroke-opacity="0.85"/>
+  <path d="M 28 64 H 46 L 58 40 L 70 88 L 82 64 H 100" fill="none" stroke="#e2b170" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+ABAS SOFT
+
+
+
+                
+            </h2>
+            <button class="close-sidebar-btn" onclick="toggleSidebar()">✕</button>
         </div>
-
-        <div class="menu-title" id="menu-title-text">مدارهای سوئیچینگ (SMPS)</div>
         
-        <button class="nav-btn active" onclick="loadSimulator('buck', this)" id="nav-buck">مبدل کاهنده (Buck)</button>
-        <button class="nav-btn" onclick="loadSimulator('boost', this)" id="nav-boost">مبدل افزاینده (Boost)</button>
-        <button class="nav-btn" onclick="loadSimulator('buck_boost', this)" id="nav-buckboost">مبدل باک-بوست</button>
-
-        <button class="nav-btn about-link" onclick="showAboutSection(this)" id="nav-about">ℹ️ درباره ما و حمایت</button>
-    </div>
+        <div id="sidebar-nav">
+            <!-- منوها توسط جاوااسکریپت در اینجا ساخته می‌شوند -->
+        </div>
+        
+        <button id="btn-about" class="nav-btn" onclick="showAboutSection()">
+            <span>ℹ️ <span id="txt-about">درباره ما و حمایت</span></span>
+        </button>
+    </aside>
 
     <!-- Main Content -->
-    <div class="main-content">
-        
-        <!-- Header -->
-        <div class="header glass-panel">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <!-- دکمه باز کردن منو (فقط وقتی منو جمع است نمایش داده می‌شود) -->
-                <button class="expand-btn" id="expand-sidebar-btn" onclick="toggleSidebar()" title="باز کردن منو">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-                </button>
-                <h1 class="page-title" id="main-title">آزمایشگاه مجازی الکترونیک قدرت</h1>
+    <main id="main-content">
+        <header>
+            <div class="header-right">
+                <button id="hamburger-btn" class="exp-btn" onclick="toggleSidebar()">☰</button>
+                <h1 class="main-title" id="main-title">آزمایشگاه مجازی الکترونیک قدرت</h1>
             </div>
-            
-            <div class="header-controls">
-                <button class="fullscreen-btn" id="fs-btn-element" onclick="toggleFullScreen()">
-                    <span>⛶</span> <span id="fs-text">تمام صفحه</span>
+            <div class="header-left">
+                <button id="btn-fa" class="active-lang" onclick="switchLanguage('fa')">فارسی</button>
+                <button id="btn-en" onclick="switchLanguage('en')">EN</button>
+                <button onclick="toggleFullScreen()">
+                    <span id="txt-fs">⛶ تمام صفحه</span>
                 </button>
+            </div>
+        </header>
 
-                <div class="lang-switch">
-                    <button id="btn-fa" class="active" onclick="switchLanguage('fa')">فارسی</button>
-                    <button id="btn-en" onclick="switchLanguage('en')">EN</button>
-                </div>
-            </div>
+        <!-- Simulator iframe Container -->
+        <div id="fs-container">
+    <!-- 👈 دکمه خروج با ویژگی ترجمه دو زبانه -->
+    
+
+            <iframe id="sim-frame" src=""></iframe>
         </div>
 
-        <!-- Simulator Container -->
-        <div class="iframe-container glass-panel" id="fs-container">
-            <iframe id="sim-frame" src="simulators/buck.html?lang=fa" allowfullscreen></iframe>
+        <!-- Coming Soon Panel -->
+        <div id="coming-soon-section" class="glass-panel">
+            <div style="font-size: 60px;">🚧</div>
+            <h2 id="cs-title">شبیه‌ساز به زودی اضافه می‌شود</h2>
+            <p id="cs-desc" style="color: var(--text-muted); max-width: 500px;">
+                شبیه‌ساز تعاملی این مدار در حال توسعه است. در حال حاضر می‌توانید از محتوای آموزشی زیر استفاده کنید.
+            </p>
         </div>
 
         <!-- Educational Section -->
-        <div class="educational-panel glass-panel" id="educational-section">
-            <div class="edu-tabs">
-                <button class="edu-tab-btn active" onclick="switchEduTab('concept')" id="tab-btn-concept">📌 مفهوم و کارکرد</button>
-                <button class="edu-tab-btn" onclick="switchEduTab('formulas')" id="tab-btn-formulas">📐 فرمول‌ها</button>
-                <button class="edu-tab-btn" onclick="switchEduTab('components')" id="tab-btn-components">⚡ نقش قطعات</button>
-                <button class="edu-tab-btn" onclick="switchEduTab('apps')" id="tab-btn-apps">🏭 کاربردهای صنعتی</button>
+        <section id="educational-section" class="glass-panel">
+            <div class="tabs-container">
+                <button class="tab-btn active" onclick="switchEduTab(0, this)" id="tab-0">📌 مفهوم و کارکرد</button>
+                <button class="tab-btn" onclick="switchEduTab(1, this)" id="tab-1">📐 فرمول‌ها</button>
+                <button class="tab-btn" onclick="switchEduTab(2, this)" id="tab-2">⚡ نقش قطعات</button>
+                <button class="tab-btn" onclick="switchEduTab(3, this)" id="tab-3">🏭 کاربردهای صنعتی</button>
+                <button class="tab-btn" onclick="switchEduTab(4, this)" id="tab-4" style="color:var(--success-color);">🧮 محاسبات</button>
             </div>
-            <div class="edu-content" id="edu-content-area"></div>
-        </div>
+            <div id="edu-content-area"></div>
+        </section>
 
-        <!-- About Us & Support Section -->
-        <div class="about-panel glass-panel" id="about-section">
-            <div class="about-header">
-                <h2>🌐 <span id="about-title-text">درباره ما و حمایت از پروژه</span></h2>
+        <!-- About Section -->
+        <section id="about-section" class="glass-panel">
+            <h2 id="abt-title" style="color:var(--neon-accent); margin-bottom:15px;">درباره ما و حمایت از پروژه</h2>
+            <p id="abt-desc" style="color:var(--text-muted); margin-bottom:25px; line-height:1.8;">
+                ما برای بالا بردن سطح علمی دانشجویان و مهندسان ایرانی این پروژه را توسعه می‌دهیم. اگر این ابزار برای شما مفید بوده، لطفاً با حمایت مالی یا معرفی به دیگران از ما حمایت کنید.
+            </p>
+            
+            <div class="copy-box" onclick="copyText('xxabasxxsoft@gmail.com', 'cp-email')">
+                <span id="lbl-email">📧 ایمیل ارتباطی:</span>
+                <code>xxabasxxsoft@gmail.com</code>
+                <span class="copy-btn-txt" id="cp-email">کپی</span>
             </div>
-            <div class="about-desc" id="about-desc-text">
-                ما برای بالا بردن سطح علمی همه انسان‌های جهان، این آزمایشگاه مجازی شبیه‌سازی را به صورت کاملاً رایگان در اختیار همگان قرار داده‌ایم. از همه دوستان و علاقه‌مندان در سراسر جهان دعوت می‌کنیم تا در صورت تمایل، برای حفظ، نگهداری، اضافه کردن مدارهای جدید و ارتقای سطح کیفی این پلتفرم آموزشی ما را همراهی و حمایت کنند.
+            <div class="copy-box" onclick="copyText('TYD34xyz...YOUR_USDT_TRC20_WALLET_ADDRESS', 'cp-usdt')">
+                <span id="lbl-usdt">💰 تتر (USDT-TRC20):</span>
+                <code>TYD34xyz...YOUR_USDT_TRC20_WALLET_ADDRESS</code>
+                <span class="copy-btn-txt" id="cp-usdt">کپی</span>
             </div>
-
-            <!-- Click to Copy Grid -->
-            <div class="copy-cards-grid">
-                <!-- Email -->
-                <div class="copy-card" onclick="copyExactText(emailAddress, 'badge-email')">
-                    <div class="copy-card-title">
-                        <span id="label-email">ایمیل ارتباطی:</span>
-                        <span class="copy-card-badge" id="badge-email">کلیک برای کپی</span>
-                    </div>
-                    <div class="copy-card-value">
-                        <span>xxabasxxsoft@gmail.com</span>
-                        <span>📋</span>
-                    </div>
-                </div>
-
-                <!-- Tether (USDT) -->
-                <div class="copy-card" onclick="copyExactText(usdtAddress, 'badge-usdt')">
-                    <div class="copy-card-title">
-                        <span id="label-usdt">آدرس تتر (USDT - TRC20):</span>
-                        <span class="copy-card-badge" id="badge-usdt">کلیک برای کپی</span>
-                    </div>
-                    <div class="copy-card-value">
-                        <span id="val-usdt">TRC20 Address...</span>
-                        <span>📋</span>
-                    </div>
-                </div>
-
-                <!-- Bitcoin (BTC) -->
-                <div class="copy-card" onclick="copyExactText(btcAddress, 'badge-btc')">
-                    <div class="copy-card-title">
-                        <span id="label-btc">آدرس بیت‌کوین (BTC):</span>
-                        <span class="copy-card-badge" id="badge-btc">کلیک برای کپی</span>
-                    </div>
-                    <div class="copy-card-value">
-                        <span id="val-btc">Bitcoin Address...</span>
-                        <span>📋</span>
-                    </div>
-                </div>
+            <div class="copy-box" onclick="copyText('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 'cp-btc')">
+                <span id="lbl-btc">₿ بیت‌کوین (BTC):</span>
+                <code>1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</code>
+                <span class="copy-btn-txt" id="cp-btc">کپی</span>
             </div>
-        </div>
+        </section>
 
-    </div>
+    </main>
 
-    <script>
-        // --- Exact Values for Copying ---
-        const emailAddress = "xxabasxxsoft@gmail.com";
-        const usdtAddress  = "TYD34xyz...YOUR_USDT_TRC20_WALLET_ADDRESS"; // آدرس واقعی خود را اینجا قرار دهید
-        const btcAddress   = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa...YOUR_BTC_WALLET"; // آدرس واقعی خود را اینجا قرار دهید
+    <script> 
+	
 
-        // --- UI Translation Dictionary ---
+
+
+
+
+	        // ==========================================
+        // 1. متغیرهای وضعیت سیستم
+        // ==========================================
+        let currentLang = 'fa';
+        let currentCircuit = 'buck';
+        let currentTab = 0;
+
+        // ==========================================
+        // 2. دسته‌بندی‌ها و لیست کامل ۴۰ مدار
+        // ==========================================
+        const CATEGORIES = [
+            { id: 'dcdc', fa: '📂 مبدل‌های DC-DC (SMPS)', en: '📂 DC-DC Converters (SMPS)' },
+            { id: 'rect', fa: '📂 یکسوسازها (Rectifiers)', en: '📂 Rectifiers' },
+            { id: 'inv',  fa: '📂 اینورترها (Inverters)', en: '📂 Inverters' },
+            { id: 'acac', fa: '📂 مبدل‌های AC-AC', en: '📂 AC-AC Converters' },
+            { id: 'reg',  fa: '📂 رگولاتورها و حفاظت', en: '📂 Regulators & Protection' },
+            { id: 'app',  fa: '📂 کاربردی و صنعتی', en: '📂 Industrial Applications' }
+        ];
+
+        const CIRCUITS = [
+            // DC-DC (11)
+            {cat:'dcdc', id:'buck',       hasSim:true,  fa:'مبدل کاهنده (Buck)',       en:'Buck Converter'},
+            {cat:'dcdc', id:'boost',      hasSim:true,  fa:'مبدل افزاینده (Boost)',    en:'Boost Converter'},
+            {cat:'dcdc', id:'buck_boost', hasSim:true,  fa:'مبدل باک-بوست',            en:'Buck-Boost Converter'},
+            {cat:'dcdc', id:'cuk',        hasSim:false, fa:'مبدل Ćuk (چاک)',           en:'Ćuk Converter'},
+            {cat:'dcdc', id:'sepic',      hasSim:false, fa:'مبدل SEPIC',               en:'SEPIC Converter'},
+            {cat:'dcdc', id:'zeta',       hasSim:false, fa:'مبدل Zeta',                en:'Zeta Converter'},
+            {cat:'dcdc', id:'flyback',    hasSim:false, fa:'مبدل Flyback',             en:'Flyback Converter'},
+            {cat:'dcdc', id:'forward',    hasSim:false, fa:'مبدل Forward',             en:'Forward Converter'},
+            {cat:'dcdc', id:'pushpull',   hasSim:false, fa:'مبدل Push-Pull',           en:'Push-Pull Converter'},
+            {cat:'dcdc', id:'halfbridge', hasSim:false, fa:'مبدل Half-Bridge',         en:'Half-Bridge Converter'},
+            {cat:'dcdc', id:'fullbridge', hasSim:false, fa:'مبدل Full-Bridge',         en:'Full-Bridge Converter'},
+          // Rectifiers (8)
+{cat:'rect', id:'halfwave',       hasSim:true,  fa:'یکسوساز نیم‌موج',          en:'Half-Wave Rectifier'},
+{cat:'rect', id:'centertap',      hasSim:false, fa:'تمام‌موج سر وسط',             en:'Center-Tap Full-Wave'},
+{cat:'rect', id:'rectifier',      hasSim:true,  fa:'تمام‌موج پل دیودی',        en:'Bridge Rectifier'},
+{cat:'rect', id:'threephase_half',hasSim:false, fa:'سه‌فاز نیم‌موج',           en:'3-Phase Half-Wave'},
+{cat:'rect', id:'threephase_full',hasSim:false, fa:'سه‌فاز پل (۶-پالسه)',      en:'3-Phase Bridge (6-Pulse)'},
+{cat:'rect', id:'thyristor',      hasSim:false, fa:'کنترل‌شده (تریستوری)',     en:'Controlled (Thyristor)'},
+{cat:'rect', id:'doubler',        hasSim:false, fa:'دوبل‌کننده ولتاژ',         en:'Voltage Doubler'},
+{cat:'rect', id:'multiplier',     hasSim:false, fa:'چندبرابرکننده ولتاژ',      en:'Voltage Multiplier'},
+            
+            // Inverters (6)
+            {cat:'inv',  id:'inv_half',   hasSim:false, fa:'اینورتر نیم‌پل تک‌فاز',    en:'1-Phase Half-Bridge Inv.'},
+            {cat:'inv',  id:'inv_full',   hasSim:false, fa:'اینورتر تمام‌پل تک‌فاز',   en:'1-Phase Full-Bridge Inv.'},
+            {cat:'inv',  id:'inv_three',  hasSim:false, fa:'اینورتر سه‌فاز',           en:'3-Phase Inverter'},
+            {cat:'inv',  id:'spwm',       hasSim:false, fa:'اینورتر SPWM',             en:'SPWM Inverter'},
+            {cat:'inv',  id:'multilevel', hasSim:false, fa:'اینورتر چندسطحی',          en:'Multilevel Inverter'},
+            {cat:'inv',  id:'resonant',   hasSim:false, fa:'اینورتر رزونانسی',         en:'Resonant Inverter'},
+            
+            // AC-AC (3)
+            {cat:'acac', id:'dimmer',     hasSim:false, fa:'دیمر (تریاک)',             en:'TRIAC Dimmer'},
+            {cat:'acac', id:'cycloconv',  hasSim:false, fa:'سایکلوکانورتور',           en:'Cycloconverter'},
+            {cat:'acac', id:'matrix',     hasSim:false, fa:'ماتریکس کانورتر',          en:'Matrix Converter'},
+            
+            // Regulators (7)
+            {cat:'reg',  id:'zener',      hasSim:false, fa:'رگولاتور زنر',             en:'Zener Regulator'},
+            {cat:'reg',  id:'linear78',   hasSim:false, fa:'رگولاتور خطی (78xx)',      en:'Linear Regulator (78xx)'},
+            {cat:'reg',  id:'lm317',      hasSim:false, fa:'رگولاتور LM317',           en:'LM317 Regulator'},
+            {cat:'reg',  id:'clamper',    hasSim:false, fa:'مدار کلمپ (Clamper)',      en:'Clamper Circuit'},
+            {cat:'reg',  id:'clipper',    hasSim:false, fa:'مدار کلیپر (Clipper)',     en:'Clipper Circuit'},
+            {cat:'reg',  id:'snubber',    hasSim:false, fa:'مدار Snubber',             en:'Snubber Circuit'},
+            {cat:'reg',  id:'pfc',        hasSim:false, fa:'اصلاح ضریب توان (PFC)',    en:'Power Factor Correction'},
+            
+            // Industrial (8)
+            {cat:'app',  id:'charger_lead',   hasSim:false, fa:'شارژر باتری سرب-اسید', en:'Lead-Acid Charger'},
+            {cat:'app',  id:'charger_lithium',hasSim:false, fa:'شارژر لیتیوم (CC-CV)', en:'Lithium Charger (CC-CV)'},
+            {cat:'app',  id:'led_driver',     hasSim:false, fa:'درایور LED',           en:'LED Driver'},
+            {cat:'app',  id:'ballast',        hasSim:false, fa:'بالاست الکترونیکی',    en:'Electronic Ballast'},
+            {cat:'app',  id:'ups',            hasSim:false, fa:'منبع تغذیه (UPS)',     en:'UPS'},
+            {cat:'app',  id:'hbridge',        hasSim:false, fa:'H-Bridge موتور DC',    en:'DC Motor H-Bridge'},
+            {cat:'app',  id:'vfd',            hasSim:false, fa:'درایو موتور AC (VFD)', en:'AC Motor Drive (VFD)'},
+            {cat:'app',  id:'mppt',           hasSim:false, fa:'ردیاب MPPT خورشیدی',   en:'Solar MPPT Tracker'}
+        ];
+
+        // ==========================================
+        // 3. لغت‌نامه و متون ترجمه‌شده (نسخه کامل)
+        // ==========================================
         const dictUI = {
             fa: {
-                title: "آزمایشگاه مجازی الکترونیک قدرت",
-                menuTitle: "مدارهای سوئیچینگ (SMPS)",
-                navBuck: "مبدل کاهنده (Buck)",
-                navBoost: "مبدل افزاینده (Boost)",
-                navBuckBoost: "مبدل باک-بوست",
-                navAbout: "ℹ️ درباره ما و حمایت",
-                fsEnter: "تمام صفحه",
-                fsExit: "خروج از تمام‌صفحه",
-                tabConcept: "📌 مفهوم و کارکرد",
-                tabFormulas: "📐 فرمول‌ها",
-                tabComponents: "⚡ نقش قطعات",
-                tabApps: "🏭 کاربردهای صنعتی",
+                title: "آزمایشگاه مجازی الکترونیک قدرت", navAbout: "درباره ما و حمایت",
+                fsEnter: "⛶ تمام صفحه", fsExit: "⛶ خروج از تمام‌صفحه",
+                t0: "📌 مفهوم و کارکرد", t1: "📐 فرمول‌ها", t2: "⚡ نقش قطعات", t3: "🏭 کاربردهای صنعتی", t4: "🧮 محاسبات",
+                csTitle: "شبیه‌ساز به زودی اضافه می‌شود",
+                csDesc: "شبیه‌ساز تعاملی این مدار در حال توسعه است. در حال حاضر می‌توانید از محتوای آموزشی کامل زیر استفاده کنید.",
+                badgeSim: "زنده", badgeSoon: "به‌زودی", clickToCopy: "کپی", copiedText: "✓ کپی شد!",
                 aboutTitle: "درباره ما و حمایت از پروژه",
-                aboutDesc: "ما برای بالا بردن سطح علمی همه انسان‌های جهان این سایت را رایگان در اختیار همه قرار داده‌ایم و از همه دوستان در سراسر جهان می‌خواهیم در صورت تمایل برای حفظ و کمک به ادامه این مسیر و ارتقا سطح کیفی این سایت به ما کمک کنید.",
-                labelEmail: "ایمیل ارتباطی:",
-                labelUsdt: "آدرس تتر (USDT - TRC20):",
-                labelBtc: "آدرس بیت‌کوین (BTC):",
-                clickToCopy: "کلیک برای کپی",
-                copiedText: "✓ کپی شد!"
+                aboutDesc: "ما برای بالا بردن سطح علمی دانشجویان و مهندسان ایرانی این پروژه را توسعه می‌دهیم. اگر این ابزار برای شما مفید بوده، لطفاً با حمایت مالی یا معرفی به دیگران از ما حمایت کنید.",
+                lblEmail: "📧 ایمیل ارتباطی:", lblUsdt: "💰 تتر (USDT-TRC20):", lblBtc: "₿ بیت‌کوین (BTC):",
+                calcInput: "ورودی‌های سیستم", calcOutput: "نتایج هوشمند", calcNo: "ماشین‌حساب هوشمند این مدار در حال طراحی است."
             },
             en: {
-                title: "Power Electronics Virtual Lab",
-                menuTitle: "SMPS Circuits",
-                navBuck: "Buck Converter",
-                navBoost: "Boost Converter",
-                navBuckBoost: "Buck-Boost Converter",
-                navAbout: "ℹ️ About Us & Support",
-                fsEnter: "Fullscreen",
-                fsExit: "Exit Fullscreen",
-                tabConcept: "📌 Concept & Operation",
-                tabFormulas: "📐 Key Formulas",
-                tabComponents: "⚡ Components",
-                tabApps: "🏭 Applications",
-                aboutTitle: "About Us & Project Support",
-                aboutDesc: "To elevate scientific knowledge for all humans worldwide, we have provided this virtual interactive simulator freely to everyone. We warmly invite friends globally to support us in maintaining and improving this educational platform.",
-                labelEmail: "Contact Email:",
-                labelUsdt: "Tether Address (USDT - TRC20):",
-                labelBtc: "Bitcoin Address (BTC):",
-                clickToCopy: "Click to copy",
-                copiedText: "✓ Copied!"
+                title: "Power Electronics Virtual Lab", navAbout: "About Us & Support",
+                fsEnter: "⛶ Fullscreen", fsExit: "⛶ Exit Fullscreen",
+                t0: "📌 Concept", t1: "📐 Formulas", t2: "⚡ Components", t3: "🏭 Applications", t4: "🧮 Calculations",
+                csTitle: "Simulator Coming Soon",
+                csDesc: "The interactive simulator for this circuit is under development. Use the educational content below.",
+                badgeSim: "LIVE", badgeSoon: "SOON", clickToCopy: "Copy", copiedText: "✓ Copied!",
+                aboutTitle: "About Us & Support",
+                aboutDesc: "We develop this project to improve the knowledge of engineering students. If you find this tool useful, please consider supporting us financially or by sharing it.",
+                lblEmail: "📧 Email Address:", lblUsdt: "💰 USDT (TRC20):", lblBtc: "₿ Bitcoin (BTC):",
+                calcInput: "System Inputs", calcOutput: "Smart Results", calcNo: "The smart calculator for this circuit is under development."
             }
         };
 
-        // --- Educational Content Dictionary ---
+        // ==========================================
+        // 4. موتور ماشین‌حساب هوشمند (Live Calculator)
+        // ==========================================
+        const calcConfig = {
+            buck: {
+                inputs: [
+                    { id: 'vin', def: 24, fa: 'ولتاژ ورودی (V)', en: 'Input Voltage (V)' },
+                    { id: 'vout', def: 12, fa: 'ولتاژ خروجی (V)', en: 'Output Voltage (V)' },
+                    { id: 'fsw', def: 25, fa: 'فرکانس (kHz)', en: 'Frequency (kHz)' },
+                    { id: 'r', def: 10, fa: 'مقاومت بار (Ω)', en: 'Load Resistor (Ω)' }
+                ],
+                calc: (v) => {
+                    let d = v.vout / v.vin; if (d > 1) d = 1; if (d < 0) d = 0;
+                    const lmin = ((1 - d) * v.r) / (2 * (v.fsw * 1000)) * 1e6;
+                    const iout = v.vout / v.r;
+                    return [
+                        { fa: 'دیوتی سایکل (D)', en: 'Duty Cycle (D)', val: (d * 100).toFixed(1) + ' %' },
+                        { fa: 'حداقل سلف CCM', en: 'Min Inductor (CCM)', val: lmin.toFixed(2) + ' μH' },
+                        { fa: 'جریان خروجی', en: 'Output Current', val: iout.toFixed(2) + ' A' }
+                    ];
+                }
+            },
+
+
+halfwave: {
+    inputs: [
+        { id: 'vm',  def: 311, fa: 'ولتاژ پیک ورودی (V)', en: 'Peak Input Voltage (V)' },
+        { id: 'fsw', def: 50,  fa: 'فرکانس ورودی (Hz)',   en: 'Input Frequency (Hz)' },
+        { id: 'r',   def: 100, fa: 'مقاومت بار (Ω)',       en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        const vdc  = v.vm / Math.PI;
+        const vrms = v.vm / 2;
+        const iout = vdc / v.r;
+        const pdc  = vdc * iout;
+
+        return [
+            { fa: 'ولتاژ متوسط (Vdc)', en: 'Average Voltage (Vdc)', val: vdc.toFixed(2) + ' V' },
+            { fa: 'ولتاژ مؤثر (Vrms)',  en: 'RMS Voltage (Vrms)',     val: vrms.toFixed(2) + ' V' },
+            { fa: 'جریان بار (Idc)',    en: 'Load Current (Idc)',   val: iout.toFixed(2) + ' A' },
+            { fa: 'توان خروجی (Pdc)',   en: 'Output Power (Pdc)',   val: pdc.toFixed(2) + ' W' },
+            { fa: 'ولتاژ معکوس (PIV)',  en: 'Peak Inverse Voltage', val: v.vm.toFixed(2) + ' V' }
+        ];
+    }
+},
+
+            boost: {
+                inputs: [
+                    { id: 'vin', def: 12, fa: 'ولتاژ ورودی (V)', en: 'Input Voltage (V)' },
+                    { id: 'vout', def: 24, fa: 'ولتاژ خروجی (V)', en: 'Output Voltage (V)' },
+                    { id: 'fsw', def: 25, fa: 'فرکانس (kHz)', en: 'Frequency (kHz)' },
+                    { id: 'r', def: 10, fa: 'مقاومت بار (Ω)', en: 'Load Resistor (Ω)' }
+                ],
+                calc: (v) => {
+                    let d = 1 - (v.vin / v.vout); if (d < 0) d = 0; if (d > 1) d = 1;
+                    const lmin = (d * Math.pow(1 - d, 2) * v.r) / (2 * (v.fsw * 1000)) * 1e6;
+                    const iin = (v.vout / v.r) / (1 - d);
+                    return [
+                        { fa: 'دیوتی سایکل (D)', en: 'Duty Cycle (D)', val: (d * 100).toFixed(1) + ' %' },
+                        { fa: 'حداقل سلف CCM', en: 'Min Inductor (CCM)', val: lmin.toFixed(2) + ' μH' },
+                        { fa: 'جریان متوسط ورودی', en: 'Avg Input Current', val: iin.toFixed(2) + ' A' }
+                    ];
+                }
+            },
+            buck_boost: {
+                inputs: [
+                    { id: 'vin', def: 12, fa: 'ولتاژ ورودی (V)', en: 'Input Voltage (V)' },
+                    { id: 'vout', def: -24, fa: 'ولتاژ خروجی (V)', en: 'Output Voltage (V)' },
+                    { id: 'fsw', def: 25, fa: 'فرکانس (kHz)', en: 'Frequency (kHz)' },
+                    { id: 'r', def: 10, fa: 'مقاومت بار (Ω)', en: 'Load Resistor (Ω)' }
+                ],
+                calc: (v) => {
+                    const absV = Math.abs(v.vout);
+                    const d = absV / (v.vin + absV);
+                    const lmin = (Math.pow(1 - d, 2) * v.r) / (2 * (v.fsw * 1000)) * 1e6;
+                    return [
+                        { fa: 'دیوتی سایکل (D)', en: 'Duty Cycle (D)', val: (d * 100).toFixed(1) + ' %' },
+                        { fa: 'حداقل سلف CCM', en: 'Min Inductor (CCM)', val: lmin.toFixed(2) + ' μH' },
+                        { fa: 'حالت کاری', en: 'Operating Mode', val: (d < 0.5) ? 'کاهنده (Buck)' : 'افزاینده (Boost)' }
+                    ];
+                }
+            },
+            rectifier: {
+                inputs: [
+                    { id: 'vm', def: 311, fa: 'ولتاژ پیک (Vm)', en: 'Peak Voltage (Vm)' },
+                    { id: 'f', def: 50, fa: 'فرکانس شبکه (Hz)', en: 'Line Freq (Hz)' },
+                    { id: 'c', def: 1000, fa: 'خازن صافی (μF)', en: 'Filter Cap (μF)' },
+                    { id: 'r', def: 100, fa: 'مقاومت بار (Ω)', en: 'Load Resistor (Ω)' }
+                ],
+                calc: (v) => {
+                    const vdc_un = (2 * v.vm) / Math.PI;
+                    const iout = vdc_un / v.r;
+                    const ripple = iout / (2 * v.f * (v.c / 1e6));
+                    let vdc_final = v.vm - (ripple / 2);
+                    if (vdc_final < 0) vdc_final = 0;
+                    return [
+                        { fa: 'ولتاژ DC میانگین', en: 'Avg DC Voltage', val: vdc_final.toFixed(1) + ' V' },
+                        { fa: 'ریپل ولتاژ (p-p)', en: 'Voltage Ripple', val: ripple.toFixed(2) + ' V' },
+                        { fa: 'جریان بار', en: 'Load Current', val: iout.toFixed(2) + ' A' }
+                    ];
+                }
+            }
+        };
+
+        // ==========================================
+        // 5. محتوای آموزشی کامل ۴۰ مدار (فارسی و انگلیسی)
+        // ==========================================
         const eduData = {
             fa: {
-                buck: {
-                    concept: "<h3>نحوه کارکرد مبدل باک (Buck)</h3><p>مبدل باک ولتاژ ورودی را به ولتاژ کمتر تبدیل می‌کند. زمانی که کلید (MOSFET) وصل است، انرژی در سلف ذخیره شده و خازن شارژ می‌شود. زمانی که کلید قطع می‌شود، دیود هرزگرد وارد مدار شده و سلف انرژی ذخیره شده خود را به بار تحویل می‌دهد.</p>",
-                    formulas: "<h3>فرمول‌های کلیدی مبدل باک</h3><ul><li><b>ولتاژ خروجی:</b> <code>Vout = D × Vin</code></li><li><b>دیوتی سایکل (D):</b> <code>D = Ton / T</code> (بین ۰ تا ۱)</li></ul>",
-                    components: "<h3>نقش قطعات اصلی</h3><ul><li><b>MOSFET:</b> کلیدزنی سریع (قطع و وصل پالس PWM).</li><li><b>سلف:</b> ذخیره انرژی مغناطیسی و هموار کردن جریان.</li><li><b>دیود هرزگرد:</b> ایجاد مسیر جریان هنگام خاموش بودن کلید.</li><li><b>خازن:</b> کاهش ریپل ولتاژ خروجی.</li></ul>",
-                    apps: "<h3>کاربردهای صنعتی</h3><ul><li>تغذیه پردازنده کامپیوتر (VRM).</li><li>شارژرهای موبایل و لپ‌تاپ.</li><li>کنترل‌کننده‌های خورشیدی (MPPT).</li></ul>"
-                },
-                boost: {
-                    concept: "<h3>نحوه کارکرد مبدل بوست (Boost)</h3><p>مبدل بوست ولتاژ خروجی را از ورودی بیشتر می‌کند. هنگام وصل بودن سوئیچ، جریان از سلف گذشته و انرژی ذخیره می‌شود. هنگام باز شدن سوئیچ، ولتاژ سلف با ولتاژ ورودی جمع شده و ولتاژ بالاتری به خروجی پمپ می‌شود.</p>",
-                    formulas: "<h3>فرمول‌های کلیدی مبدل بوست</h3><ul><li><b>ولتاژ خروجی:</b> <code>Vout = Vin / (1 - D)</code></li><li><b>دیوتی سایکل:</b> <code>D = 1 - (Vin / Vout)</code></li></ul>",
-                    components: "<h3>نقش قطعات اصلی</h3><ul><li><b>سلف:</b> ایجاد ضربه ولتاژ بالا (Inductive Spike).</li><li><b>MOSFET:</b> اتصال کوتاه لحظه‌ای سلف به زمین برای شارژ.</li><li><b>دیود:</b> جلوگیری از برگشت جریان از خازن.</li></ul>",
-                    apps: "<h3>کاربردهای صنعتی</h3><ul><li>پاوربانک‌ها (۳.۷ به ۵ ولت).</li><li>درایور بک‌لایت LED تلویزیون.</li><li>مبدل‌های خودروهای برقی (EV).</li></ul>"
-                },
-                buck_boost: {
-                    concept: "<h3>نحوه کارکرد مبدل باک-بوست (Buck-Boost)</h3><p>این مبدل قادر است ولتاژ را هم کاهش و هم افزایش دهد و پلاریته ولتاژ خروجی را معکوس کند. اگر D < 0.5 باشد مدار کاهنده و اگر D > 0.5 باشد مدار افزاینده عمل می‌کند.</p>",
-                    formulas: "<h3>فرمول‌های کلیدی مبدل باک-بوست</h3><ul><li><b>ولتاژ خروجی:</b> <code>Vout = Vin × (D / (1 - D))</code></li><li><b>نقطه تقارن:</b> در <code>D = 0.5</code> ولتاژ خروجی با ورودی برابر است.</li></ul>",
-                    components: "<h3>نقش قطعات اصلی</h3><ul><li><b>MOSFET:</b> کنترل زمان شارژ سلف از منبع.</li><li><b>سلف:</b> واسط انتقال انرژی.</li><li><b>دیود:</b> هدایت جریان منفی سلف به خروجی.</li></ul>",
-                    apps: "<h3>کاربردهای صنعتی</h3><ul><li>دستگاه‌های باتری‌دار با افت ولتاژ متغیر.</li><li>سیستم‌های الکترونیک خودرویی.</li></ul>"
-                }
+                buck: [
+                    '<h3>مبدل کاهنده (Buck)</h3><ul><li>ولتاژ خروجی همیشه <code>کمتر</code> از ورودی است.</li><li>سوئیچ (MOSFET) با فرکانس بالا قطع و وصل می‌شود.</li><li>وقتی سوئیچ وصل است، سلف انرژی ذخیره می‌کند و خازن شارژ می‌شود.</li><li>وقتی سوئیچ قطع است، دیود هرزگرد مسیر جریان سلف را حفظ می‌کند.</li><li>جریان الکترونی از <code>−</code> به <code>+</code> جاری می‌شود.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت تبدیل: <code>Vout = D × Vin</code></li><li>دیوتی سایکل: <code>D = ton / T</code></li><li>ریپل جریان سلف: <code>ΔIL = (Vin − Vout) × D / (f × L)</code></li><li>ریپل ولتاژ خازن: <code>ΔVc = ΔIL / (8 × f × C)</code></li><li>حداقل سلف CCM: <code>Lmin = (1−D) × R / (2f)</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>MOSFET</code>: سوئیچ اصلی با کنترل PWM.</li><li><code>دیود</code>: ایجاد مسیر هرزگرد هنگام قطع سوئیچ.</li><li><code>سلف (L)</code>: ذخیره انرژی مغناطیسی و صاف‌کردن جریان.</li><li><code>خازن (C)</code>: صاف‌کردن ریپل ولتاژ خروجی.</li><li><code>بار (R)</code>: مصرف‌کننده توان.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>منابع تغذیه کامپیوتر (ATX / VRM)</li><li>تنظیم ولتاژ باتری در موبایل و لپ‌تاپ</li><li>درایور LED توان بالا</li><li>رگولاتور Point-of-Load (PoL)</li></ul>'
+                ],
+                boost: [
+                    '<h3>مبدل افزاینده (Boost)</h3><ul><li>ولتاژ خروجی همیشه <code>بیشتر</code> از ورودی است.</li><li>وقتی سوئیچ وصل است، سلف شارژ می‌شود.</li><li>وقتی سوئیچ قطع است، ولتاژ سلف با ولتاژ منبع جمع شده و به خروجی منتقل می‌شود.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت تبدیل: <code>Vout = Vin / (1 − D)</code></li><li>ریپل جریان سلف: <code>ΔIL = Vin × D / (f × L)</code></li><li>حداقل سلف CCM: <code>Lmin = D × (1−D)² × R / (2f)</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>سلف (L)</code>: ذخیره انرژی و پمپاژ ولتاژ.</li><li><code>MOSFET</code>: کلید شارژ سلف به زمین.</li><li><code>دیود</code>: جلوگیری از برگشت شارژ خازن.</li><li><code>خازن (C)</code>: تأمین ولتاژ بار در زمان وصل سوئیچ.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>افزایش ولتاژ باتری (3.7V به 5V USB)</li><li>پیش‌تنظیم‌کننده PFC فعال</li><li>درایور LED رشته‌ای خودرو</li></ul>'
+                ],
+                buck_boost: [
+                    '<h3>مبدل باک-بوست</h3><ul><li>ولتاژ خروجی می‌تواند <code>کمتر یا بیشتر</code> از ورودی باشد.</li><li>پلاریته ولتاژ خروجی <code>معکوس</code> (منفی) است.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت تبدیل: <code>Vout = −Vin × D / (1 − D)</code></li><li>اگر <code>D &lt; 0.5</code>: حالت کاهنده</li><li>اگر <code>D &gt; 0.5</code>: حالت افزاینده</li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>سلف (L)</code>: ذخیره‌ساز اصلی انرژی.</li><li><code>MOSFET</code>: کنترل شارژ سلف.</li><li><code>دیود</code>: هدایت جریان سلف به بار هنگام قطع.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>تغذیه مدارات با ولتاژ منفی (آپ‌امپ‌ها)</li><li>تنظیم ولتاژ باتری‌های در حال تخلیه</li></ul>'
+                ],
+                cuk: [
+                    '<h3>مبدل Ćuk (چاک)</h3><ul><li>خروجی معکوس با <code>ریپل جریان بسیار کم</code> در ورودی و خروجی.</li><li>از خازن سری C1 برای انتقال انرژی استفاده می‌کند.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت تبدیل: <code>Vout = −Vin × D / (1 − D)</code></li><li>ولتاژ خازن انتقال: <code>Vc1 = Vin / (1 − D)</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>L1 &amp; L2</code>: صاف‌کردن جریان ورودی و خروجی.</li><li><code>C1</code>: خازن واسط انتقال انرژی.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>تجهیزات حساس به نویز پزشکی و نظامی</li></ul>'
+                ],
+                sepic: [
+                    '<h3>مبدل SEPIC</h3><ul><li>خروجی <code>مثبت</code> با قابلیت افزایش یا کاهش ولتاژ.</li><li>از خازن کوپلاژ سری بین دو سلف استفاده می‌کند.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت تبدیل: <code>Vout = Vin × D / (1 − D)</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>L1 &amp; L2</code>: سلف‌های ورودی و خروجی.</li><li><code>Cs</code>: خازن کوپلاژ سری.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>دستگاه‌های شارژی باتری لیتیومی متغیر</li></ul>'
+                ],
+                zeta: [
+                    '<h3>مبدل Zeta</h3><ul><li>خروجی مثبت و غیرمعکوس با رفتار باک-بوست.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت تبدیل: <code>Vout = Vin × D / (1 − D)</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>Cs</code>: خازن سری انتقال انرژی.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>منابع تغذیه ایزوله نشده صنعتی</li></ul>'
+                ],
+                flyback: [
+                    '<h3>مبدل فلای‌بک (Flyback)</h3><ul><li>توپولوژی ایزوله با ترانسفورماتور شکاف‌دار (سلف کوپل شده).</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت تبدیل: <code>Vout = Vin × (Ns/Np) × D / (1−D)</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>ترانس فلای‌بک</code>: ذخیره انرژی و ایزولاسیون.</li><li><code>مدار اسنابر RCD</code>: حذف اسپایک‌های ولتاژ.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>شارژر موبایل و آداپتورهای دیواری</li></ul>'
+                ],
+                forward: [
+                    '<h3>مبدل فوروارد (Forward)</h3><ul><li>انرژی مستقیماً در زمان وصل سوئیچ به ثانویه منتقل می‌شود.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت تبدیل: <code>Vout = Vin × (Ns/Np) × D</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>سیم‌پیچ ریست</code>: تخلیه مغناطیسی هسته.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>منابع تغذیه صنعتی ۱۰۰ تا ۵۰۰ وات</li></ul>'
+                ],
+                pushpull: [
+                    '<h3>مبدل Push-Pull</h3><ul><li>دو سوئیچ به‌صورت متناوب ترانس سر وسط را تحریک می‌کنند.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت تبدیل: <code>Vout = 2 × Vin × (Ns/Np) × D</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>ترانس سر وسط</code>: بهره‌برداری کامل از هسته.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>اینورترهای DC به AC مبدل ولتاژ باتری</li></ul>'
+                ],
+                halfbridge: [
+                    '<h3>مبدل نیم‌پل (Half-Bridge)</h3><ul><li>تقسیم ولتاژ ورودی با دو خازن سری.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت تبدیل: <code>Vout = (Vin/2) × (Ns/Np) × D</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>C1, C2</code>: خازن‌های مقسم ولتاژ ورودی.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>منابع تغذیه کامپیوتر توان متوسط</li></ul>'
+                ],
+                fullbridge: [
+                    '<h3>مبدل تمام‌پل (Full-Bridge)</h3><ul><li>استفاده از ۴ سوئیچ برای اعمال کل ولتاژ ورودی به ترانس.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت تبدیل: <code>Vout = Vin × (Ns/Np) × D</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>Q1 تا Q4</code>: چهار سوئیچ پل.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>دستگاه‌های جوشکاری اینورتری و شارژر EV</li></ul>'
+                ],
+halfwave: [
+    '<h3>یکسوساز نیم‌موج</h3><ul><li>عبور دادن تنها یک نیم‌سیکل سیگنال AC ورودی.</li></ul>',
+    '<h3>فرمول‌های کلیدی</h3><ul><li><code>Vdc = Vm / π ≈ 0.318 × Vm</code></li><li><code>Vrms = Vm / 2</code></li></ul>',
+    '<h3>نقش قطعات</h3><ul><li><code>دیود قدرت</code>: یکسوسازی سیگنال ورودی.</li><li><code>خازن فیلتر</code>: صاف کردن ریپل ولتاژ خروجی.</li></ul>',
+    '<h3>کاربردهای صنعتی</h3><ul><li>مدارات دتکتور سیگنال و آشکارساز AM</li><li>شارژرهای باتری ساده و کم‌توان</li></ul>'
+],
+
+                centertap: [
+                    '<h3>یکسوساز تمام‌موج سر وسط</h3><ul><li>استفاده از ترانس سر وسط و دو دیود.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>Vdc = 2Vm / π ≈ 0.636 × Vm</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>ترانس سر وسط</code>: تفکیک فازها.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>منابع تغذیه دوبل مثبت/منفی</li></ul>'
+                ],
+                rectifier: [
+                    '<h3>یکسوساز تمام‌موج پل دیودی</h3><ul><li>تبدیل هر دو نیم‌سیکل AC به DC با ۴ دیود.</li><li>دیودها دو به دو متناوب هدایت می‌کنند.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>ولتاژ DC متوسط: <code>Vdc = 2Vm / π − 2Vf</code></li><li>فرکانس ریپل: <code>f_ripple = 2 × f_in</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>دیودهای پل (D1-D4)</code>: یکسوسازی کامل.</li><li><code>خازن صافی</code>: کاهش ریپل ولتاژ خروجی.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>ورودی تمام منابع تغذیه سوئیچینگ و خطی</li></ul>'
+                ],
+                threephase_half: [
+                    '<h3>یکسوساز سه‌فاز نیم‌موج</h3><ul><li>یکسوسازی ۳ فاز با ۳ دیود.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>Vdc = 0.827 × Vm_line</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>۳ دیود فاز</code>: هدایت بیشترین ولتاژ آنی.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>تغذیه کوره‌های الکتریکی صنعتی</li></ul>'
+                ],
+                threephase_full: [
+                    '<h3>یکسوساز سه‌فاز پل (۶-پالسه)</h3><ul><li>استاندارد اصلی یکسوسازی سه‌فاز صنعتی.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>Vdc = 1.654 × Vm_phase</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>۶ دیود پل</code>: یکسوسازی کامل ۳ فاز.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>ورودی درایوهای صنعتی VFD</li></ul>'
+                ],
+                thyristor: [
+                    '<h3>یکسوساز کنترل‌شده (تریستوری)</h3><ul><li>کنترل ولتاژ خروجی با تنظیم زاویه آتش (α).</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>Vdc = (2Vm/π) × cos(α)</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>تریستور (SCR)</code>: سوئیچ کنترل‌پذیر با گیت.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>کنترل سرعت موتورهای DC بزرگ</li></ul>'
+                ],
+                doubler: [
+                    '<h3>دوبل‌کننده ولتاژ</h3><ul><li>تولید ولتاژ DC برابر دو برابر پیک AC ورودی.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>Vout ≈ 2 × Vm</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>دیودها و خازن‌های سری</code>: ذخیره پله‌ای شارژ.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>تغذیه لامپ‌های های‌ولتاژ و CRT</li></ul>'
+                ],
+               // کد صحیح که باید در فایل index.html باشد:
+multiplier: {
+    concept: "مداری که با استفاده از دیودها و خازن‌ها، ولتاژ AC ورودی را به ولتاژ DC بسیار بالاتر تبدیل می‌کند.",
+    formulas: ["Vout = 2 * n * Vpeak", "n = تعداد مراحل"],
+    comps: ["دیودهای ولتاژ بالا", "خازن‌های پلی‌استر"],
+    apps: ["تولید ولتاژ بسیار بالا در تلویزیون‌های قدیمی", "دستگاه‌های X-Ray", "شتاب‌دهنده‌های ذرات"] // اصلاح شد به apps
+},
+                inv_half: [
+                    '<h3>اینورتر نیم‌پل تک‌فاز</h3><ul><li>تبدیل DC به AC با ۲ سوئیچ و ۲ خازن مقسم.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>Vac_peak = Vdc / 2</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>سوئیچ‌های مکمل</code>: ایجاد سیکل مثبت/منفی.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>UPSهای کوچک تک‌فاز</li></ul>'
+                ],
+                inv_full: [
+                    '<h3>اینورتر تمام‌پل تک‌فاز</h3><ul><li>تبدیل DC به AC با ۴ سوئیچ (پل H).</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>Vac_peak = Vdc</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>۴ سوئیچ H-Bridge</code>: کنترل قطری جریان.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>اینورترهای خورشیدی متصل به شبکه</li></ul>'
+                ],
+                inv_three: [
+                    '<h3>اینورتر سه‌فاز</h3><ul><li>تولید خروجی ۳ فاز AC با ۶ سوئیچ قدرتمند.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>اختلاف فاز خروجی‌ها: <code>120 درجه</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>۶ IGBT</code>: ساخت ۳ فاز متناوب.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>راه اندازی موتورهای القایی سه‌فاز</li></ul>'
+                ],
+                spwm: [
+                    '<h3>اینورتر SPWM</h3><ul><li>تولید ولتاژ سینوسی با کیفیت بالا با مدولاسیون پهنای پالس.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>شاخص مدولاسیون: <code>ma = Vref / Vcarrier</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>فیلتر LC خروجی</code>: حذف فرکانس حامل PWM.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>اینورترهای سینوسی خالص (Pure Sine)</li></ul>'
+                ],
+                multilevel: [
+                    '<h3>اینورتر چندسطحی</h3><ul><li>ایجاد شکل موج پله‌ای نزدیک به سینوس در ولتاژهای بالا.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>تعداد سطوح ولتاژ: <code>N</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>خازن‌های شناور و دیودهای کلمپ</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>درایوهای ولتاژ متوسط صنعتی (MV)</li></ul>'
+                ],
+                resonant: [
+                    '<h3>اینورتر رزونانسی</h3><ul><li>سوئیچینگ در ولتاژ یا جریان صفر (ZVS/ZCS) جهت کاهش تلفات.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>فرکانس رزونانس: <code>fr = 1 / (2π√(L*C))</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>تانک رزونانس LC</code>: شکل دهی سینوسی جریان.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>کوره القایی و شارژرهای بی‌سیم</li></ul>'
+                ],
+                dimmer: [
+                    '<h3>دیمر تریاک (AC-AC)</h3><ul><li>کنترل توان AC با برش فاز توسط تریاک.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>زاویه آتش: <code>0 &lt; α &lt; 180</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>TRIAC &amp; DIAC</code>: کنترل آتش دوطرفه.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>کنترل روشنایی و سرعت فن‌ها</li></ul>'
+                ],
+                cycloconv: [
+                    '<h3>سایکلوکانورتور</h3><ul><li>تبدیل مستقیم AC به AC با فرکانس پایین‌تر بدون لینک DC.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>fo &lt; fi / 3</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>آرایه تریستورهای متقابل</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>موتورهای آسیاب‌های بسیار بزرگ معدن</li></ul>'
+                ],
+                matrix: [
+                    '<h3>ماتریکس کانورتر</h3><ul><li>تبدیل مستقیم AC به AC با آرایه ۳×۳ سوئیچ‌های دوطرفه.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>حداکثر بهره ولتاژ: <code>86.6%</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>۹ سوئیچ دوطرفه IGBT</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>صنایع هوافضا و درایوهای فشرده</li></ul>'
+                ],
+                zener: [
+                    '<h3>رگولاتور زنر</h3><ul><li>تثبیت ساده ولتاژ DC با دیود زنر در بایاس معکوس.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>مقاومت سری: <code>Rs = (Vin − Vz) / Iz</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>دیود زنر</code>: تثبیت ولتاژ روی شکست معکوس.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>ولتاژ مرجع مدارات آنالوگ</li></ul>'
+                ],
+                linear78: [
+                    '<h3>رگولاتور خطی 78xx</h3><ul><li>آی‌سی‌های تثبیت‌کننده ولتاژ خروجی ثابت.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>تلفات توان: <code>P = (Vin − Vout) × Iout</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>آی‌سی 7805/7812</code>: تثبیت‌کننده داخلی.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>تغذیه بورد میکروکنترلرها</li></ul>'
+                ],
+                lm317: [
+                    '<h3>رگولاتور قابل تنظیم LM317</h3><ul><li>تنظیم ولتاژ خروجی از ۱.۲۵ تا ۳۷ ولت.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>Vout = 1.25 × (1 + R2/R1)</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>پتانسیومتر R2</code>: تنظیم ولتاژ.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>منابع تغذیه متغیر آزمایشگاهی</li></ul>'
+                ],
+                clamper: [
+                    '<h3>مدار کلمپ (Clamper)</h3><ul><li>تغییر دادن سطح DC سیگنال ورودی بدون تغییر شکل موج.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>Vpeak_out = Vpeak_in + Vdc</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>دیود و خازن کلمپ</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>سیستم‌های گیرنده تلویزیون و پردازش تصویر</li></ul>'
+                ],
+                clipper: [
+                    '<h3>مدار کلیپر (Clipper)</h3><ul><li>حذف کردن بخشی از موج بالاتر یا پایین‌تر از یک سطح مشخص.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>ولتاژ آستانه: <code>Vth = Vbias + Vf</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>دیود برش‌دهنده</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>مدارات حفاظت از اضافه ولتاژ ورودی</li></ul>'
+                ],
+                snubber: [
+                    '<h3>مدار Snubber</h3><ul><li>حفاظت از سوئیچ‌ها در برابر اسپایک‌های مخرب ولتاژ.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>فرمول RC اسنابر</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>شبکه RCD</code>: جذب انرژی نشتی.</li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>حفاظت از MOSFET و IGBT در کلیدزنی</li></ul>'
+                ],
+                pfc: [
+                    '<h3>اصلاح ضریب توان (PFC)</h3><ul><li>هم‌فاز کردن جریان ورودی با ولتاژ برای افزایش ضریب توان.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>PF = P / S ≈ 1.0</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>کنترلر Boost PFC</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>منابع تغذیه بالای ۷۵ وات صنعتی</li></ul>'
+                ],
+                charger_lead: [
+                    '<h3>شارژر باتری سرب-اسید</h3><ul><li>شارژ دو مرحله‌ای جریان ثابت و ولتاژ ثابت (CC/CV).</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>ولتاژ شارژ شناور: <code>13.8V</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>مدار کنترل جریان و ولتاژ</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>سیستم‌های برق اضطراری UPS</li></ul>'
+                ],
+                charger_lithium: [
+                    '<h3>شارژر لیتیوم (CC-CV)</h3><ul><li>پروتکل شارژ دقیق باتری‌های لیتیومی با ایمنی بالا.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>ولتاژ قطع هر سلول: <code>4.2V</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>آی‌سی مدیریت شارژ (BMS)</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>شارژر خودروهای برقی و گوشی‌های هوشمند</li></ul>'
+                ],
+                led_driver: [
+                    '<h3>درایور LED</h3><ul><li>تأمین جریان ثابت دقیق برای طول عمر LEDها.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>I_led = Vref / Rsense</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>سنسور جریان سری</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>روشنایی‌های بزرگ معابر و پروژکتورها</li></ul>'
+                ],
+                ballast: [
+                    '<h3>بالاست الکترونیکی</h3><ul><li>راه‌اندازی فرکانس بالای لامپ‌های فلورسنت.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>فرکانس کاری: <code>20kHz - 50kHz</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>اینورتر نیم‌پل و مدار رزونانس</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>سیستم‌های روشنایی صنعتی قدیمی</li></ul>'
+                ],
+                ups: [
+                    '<h3>منبع تغذیه بدون وقفه (UPS)</h3><ul><li>تأمین برق بدون قطعی در زمان قطع شبکه.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>زمان پشتیبانی: <code>t = (N × V × Ah × η) / P</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>اینورتر، یکسوساز و کلید Static Switch</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>دیتا‌سنترها و بیمارستان‌ها</li></ul>'
+                ],
+                hbridge: [
+                    '<h3>H-Bridge موتور DC</h3><ul><li>کنترل جهت چرخش و سرعت موتور DC.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>ولتاژ خروجی: <code>Vout = (2D - 1) × Vin</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>۴ سوئیچ پل و دیودهای هرزگرد</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>رباتیک و درایو موتورهای DC صنعتی</li></ul>'
+                ],
+                vfd: [
+                    '<h3>درایو موتور AC (VFD)</h3><ul><li>کنترل دور و گشتاور موتورهای AC با تغییر فرکانس و ولتاژ.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li>نسبت ثابت: <code>V / f = Constant</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>یکسوساز + لینک DC + اینورتر PWM</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>پمپ‌ها، فن‌ها و آسانسورهای صنعتی</li></ul>'
+                ],
+                mppt: [
+                    '<h3>ردیاب MPPT خورشیدی</h3><ul><li>استخراج حداکثر توان ممکن از پنل‌های خورشیدی.</li></ul>',
+                    '<h3>فرمول‌های کلیدی</h3><ul><li><code>P_max = V_mpp × I_mpp</code></li></ul>',
+                    '<h3>نقش قطعات</h3><ul><li><code>مبدل Buck/Boost و میکروکنترلر MPPT</code></li></ul>',
+                    '<h3>کاربردهای صنعتی</h3><ul><li>نیروگاه‌های خورشیدی تجاری و خانگی</li></ul>'
+                ]
             },
             en: {
-                buck: {
-                    concept: "<h3>Buck Converter Operation</h3><p>The Buck converter steps down input voltage efficiently. When the MOSFET is ON, energy is stored in the inductor. When OFF, the freewheeling diode conducts, delivering energy to the load.</p>",
-                    formulas: "<h3>Key Formulas</h3><ul><li><b>Output Voltage:</b> <code>Vout = D × Vin</code></li><li><b>Duty Cycle (D):</b> <code>D = Ton / T</code></li></ul>",
-                    components: "<h3>Component Roles</h3><ul><li><b>MOSFET:</b> High-speed PWM switch.</li><li><b>Inductor:</b> Stores magnetic energy.</li><li><b>Freewheeling Diode:</b> Provides current path when MOSFET is OFF.</li><li><b>Output Capacitor:</b> Smooths output voltage.</li></ul>",
-                    apps: "<h3>Applications</h3><ul><li>Motherboard CPU VRMs.</li><li>Mobile chargers.</li><li>Solar MPPT controllers.</li></ul>"
-                },
-                boost: {
-                    concept: "<h3>Boost Converter Operation</h3><p>The Boost converter steps up input voltage. When the switch turns ON, current flows through the inductor storing energy. When OFF, inductor voltage adds to the input voltage, boosting the output.</p>",
-                    formulas: "<h3>Key Formulas</h3><ul><li><b>Output Voltage:</b> <code>Vout = Vin / (1 - D)</code></li></ul>",
-                    components: "<h3>Component Roles</h3><ul><li><b>Inductor:</b> Stores energy and creates voltage spikes.</li><li><b>MOSFET:</b> Shorts inductor to ground momentarily to charge it.</li><li><b>Diode:</b> Prevents reverse current.</li></ul>",
-                    apps: "<h3>Applications</h3><ul><li>Power banks (3.7V to 5V).</li><li>TV LED Backlight drivers.</li><li>Electric Vehicle powertrains.</li></ul>"
-                },
-                buck_boost: {
-                    concept: "<h3>Buck-Boost Operation</h3><p>Can both step up and step down voltage while inverting output polarity. Buck mode occurs when D < 0.5, Boost mode when D > 0.5.</p>",
-                    formulas: "<h3>Key Formulas</h3><ul><li><b>Output Voltage:</b> <code>Vout = Vin × (D / (1 - D))</code></li></ul>",
-                    components: "<h3>Component Roles</h3><ul><li><b>MOSFET & Inductor:</b> Store and transfer energy with inverted polarity.</li></ul>",
-                    apps: "<h3>Applications</h3><ul><li>Battery-powered devices with fluctuating supply.</li><li>Automotive electronics.</li></ul>"
-                }
-            }
+                buck: [
+                    '<h3>Buck Converter</h3><ul><li>Output voltage is always <code>lower</code> than input.</li><li>MOSFET switches at high frequency.</li><li>Inductor stores energy when switch is ON.</li></ul>',
+                    '<h3>Key Formulas</h3><ul><li>Conversion Ratio: <code>Vout = D × Vin</code></li><li>Duty Cycle: <code>D = ton / T</code></li></ul>',
+                    '<h3>Components Role</h3><ul><li><code>MOSFET</code>: Main switch driven by PWM.</li><li><code>Freewheeling Diode</code>: Maintains current flow when switch is OFF.</li></ul>',
+                    '<h3>Industrial Applications</h3><ul><li>Computer ATX Power Supplies</li><li>Point-of-Load (PoL) Regulators</li></ul>'
+                ],
+                boost: [
+                    '<h3>Boost Converter</h3><ul><li>Output voltage is always <code>higher</code> than input.</li></ul>',
+                    '<h3>Key Formulas</h3><ul><li>Conversion Ratio: <code>Vout = Vin / (1 − D)</code></li></ul>',
+                    '<h3>Components Role</h3><ul><li><code>Inductor</code>: Energy storage & voltage booster.</li></ul>',
+                    '<h3>Industrial Applications</h3><ul><li>Active PFC Pre-regulators</li></ul>'
+                ],
+                buck_boost: [
+                    '<h3>Buck-Boost Converter</h3><ul><li>Output can be <code>higher or lower</code> than input with inverted polarity.</li></ul>',
+                    '<h3>Key Formulas</h3><ul><li>Ratio: <code>Vout = −Vin × D / (1 − D)</code></li></ul>',
+                    '<h3>Components Role</h3><ul><li><code>Inductor</code>: Main energy transfer element.</li></ul>',
+                    '<h3>Industrial Applications</h3><ul><li>Negative Voltage Power Supplies</li></ul>'
+                ],
+                rectifier: [
+                    '<h3>Bridge Rectifier</h3><ul><li>Converts both AC half-cycles to DC using 4 diodes.</li></ul>',
+                    '<h3>Key Formulas</h3><ul><li>Average DC: <code>Vdc = 2Vm / π − 2Vf</code></li></ul>',
+                    '<h3>Components Role</h3><ul><li><code>Bridge Diodes</code>: Full-wave rectification.</li></ul>',
+                    '<h3>Industrial Applications</h3><ul><li>Input stage of AC-DC PSUs</li></ul>'
+                ],
+           halfwave: [
+    '<h3>Half-Wave Rectifier</h3><ul><li>Passes only one half-cycle of the AC input signal.</li></ul>',
+    '<h3>Key Formulas</h3><ul><li><code>Vdc = Vm / π ≈ 0.318 × Vm</code></li><li><code>Vrms = Vm / 2</code></li></ul>',
+    '<h3>Component Roles</h3><ul><li><code>Power Diode</code>: Rectifies the input signal.</li><li><code>Filter Capacitor</code>: Smooths out output voltage ripple.</li></ul>',
+    '<h3>Industrial Applications</h3><ul><li>AM signal detector circuits</li><li>Simple low-power battery chargers</li></ul>'
+], }
         };
 
-        // --- State Management ---
-        let currentLang = 'fa';
-        let currentSim = 'buck';
-        let currentEduTab = 'concept';
+        // افزودن محتوای پیش‌فرض برای سایر مدارهای انگلیسی جهت جلوگیری از خطای خالی بودن
+        CIRCUITS.forEach(c => {
+            if(!eduData.en[c.id]) {
+                eduData.en[c.id] = [
+                    `<h3>${c.en}</h3><ul><li>Interactive simulation and full educational content for <code>${c.en}</code>.</li></ul>`,
+                    `<h3>Key Formulas</h3><ul><li>Standard conversion formulas apply.</li></ul>`,
+                    `<h3>Components Role</h3><ul><li>Semiconductor switches and passive filters.</li></ul>`,
+                    `<h3>Applications</h3><ul><li>Industrial power electronics systems.</li></ul>`
+                ];
+            }
+        });
 
-        function switchLanguage(lang) {
-            currentLang = lang;
+        // ==========================================
+        // 6. توابع اصلی مدیریت UI و منوها
+        // ==========================================
+
+        // رندر کردن منوی کشویی سایدبار (منوها در ابتدا بسته هستند)
+        function renderSidebar() {
+            const nav = document.getElementById('sidebar-nav');
+            let html = '';
             
-            document.documentElement.setAttribute('dir', lang === 'fa' ? 'rtl' : 'ltr');
-            document.documentElement.setAttribute('lang', lang);
-
-            document.getElementById('btn-fa').classList.toggle('active', lang === 'fa');
-            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-
-            document.getElementById('main-title').innerText = dictUI[lang].title;
-            document.getElementById('menu-title-text').innerText = dictUI[lang].menuTitle;
-            document.getElementById('nav-buck').innerText = dictUI[lang].navBuck;
-            document.getElementById('nav-boost').innerText = dictUI[lang].navBoost;
-            document.getElementById('nav-buckboost').innerText = dictUI[lang].navBuckBoost;
-            document.getElementById('nav-about').innerText = dictUI[lang].navAbout;
+            CATEGORIES.forEach(cat => {
+                // تمام دسته‌بندی‌ها به صورت پیش‌فرض کلاس collapsed دارند (بسته هستند)
+                html += `
+                <div class="cat-header collapsed" onclick="toggleCategory(this)">
+                    <span>${cat[currentLang]}</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="cat-items collapsed">`;
+                
+                const catCircuits = CIRCUITS.filter(c => c.cat === cat.id);
+                catCircuits.forEach(c => {
+                    const isActive = (c.id === currentCircuit) ? 'active' : '';
+                    const badge = c.hasSim 
+                        ? `<span class="badge badge-sim">${dictUI[currentLang].badgeSim}</span>` 
+                        : `<span class="badge badge-soon">${dictUI[currentLang].badgeSoon}</span>`;
+                        
+                    html += `
+                    <button class="nav-btn ${isActive}" onclick="loadSimulator('${c.id}', this)">
+                        <span>${c[currentLang]}</span>
+                        ${badge}
+                    </button>`;
+                });
+                
+                html += `</div>`;
+            });
             
-            document.getElementById('tab-btn-concept').innerText = dictUI[lang].tabConcept;
-            document.getElementById('tab-btn-formulas').innerText = dictUI[lang].tabFormulas;
-            document.getElementById('tab-btn-components').innerText = dictUI[lang].tabComponents;
-            document.getElementById('tab-btn-apps').innerText = dictUI[lang].tabApps;
-
-            document.getElementById('about-title-text').innerText = dictUI[lang].aboutTitle;
-            document.getElementById('about-desc-text').innerText = dictUI[lang].aboutDesc;
-            document.getElementById('label-email').innerText = dictUI[lang].labelEmail;
-            document.getElementById('label-usdt').innerText = dictUI[lang].labelUsdt;
-            document.getElementById('label-btc').innerText = dictUI[lang].labelBtc;
-
-            document.getElementById('badge-email').innerText = dictUI[lang].clickToCopy;
-            document.getElementById('badge-usdt').innerText = dictUI[lang].clickToCopy;
-            document.getElementById('badge-btc').innerText = dictUI[lang].clickToCopy;
-
-            const isFS = !!document.fullscreenElement;
-            document.getElementById('fs-text').innerText = isFS ? dictUI[lang].fsExit : dictUI[lang].fsEnter;
-
-            document.getElementById('sim-frame').src = `simulators/${currentSim}.html?lang=${lang}`;
-
-            switchEduTab(currentEduTab);
+            nav.innerHTML = html;
         }
 
-        // تابع باز و بسته کردن کشویی سایدبار
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            const expandBtn = document.getElementById('expand-sidebar-btn');
-
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-
-            // نمایش یا مخفی کردن دکمه همبرگری در هدر
-            if (sidebar.classList.contains('collapsed')) {
-                expandBtn.style.display = 'flex';
-            } else {
-                expandBtn.style.display = 'none';
+        // باز و بسته کردن اکاردئونی دسته‌بندی‌ها
+        function toggleCategory(headerEl) {
+            headerEl.classList.toggle('collapsed');
+            const itemsEl = headerEl.nextElementSibling;
+            if (itemsEl && itemsEl.classList.contains('cat-items')) {
+                itemsEl.classList.toggle('collapsed');
             }
         }
 
-        function loadSimulator(simName, btnElement) {
-            currentSim = simName;
-
-            document.getElementById('fs-container').style.display = 'block';
-            document.getElementById('educational-section').style.display = 'block';
-            document.getElementById('about-section').style.display = 'none';
-
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-
-            document.getElementById('sim-frame').src = `simulators/${simName}.html?lang=${currentLang}`;
-
-            switchEduTab(currentEduTab);
+        // باز و بسته کردن سایدبار (کشویی)
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
         }
 
-        function showAboutSection(btnElement) {
+        // بارگذاری شبیه‌ساز یا پنل به زودی
+        function loadSimulator(id, btnElement) {
+            currentCircuit = id;
+            
+            // هایلایت کردن دکمه منو
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            if(btnElement) {
+                btnElement.classList.add('active');
+            } else {
+                // پیدا کردن دکمه بر اساس ID در صورت عدم پاس دادن المان
+                document.querySelectorAll('.nav-btn').forEach(b => {
+                    if(b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${id}'`)) {
+                        b.classList.add('active');
+                    }
+                });
+            }
+
+            // مخفی کردن بخش درباره ما و نشان دادن بخش اصلی
+            document.getElementById('about-section').style.display = 'none';
+            document.getElementById('educational-section').style.display = 'block';
+
+            const circuit = CIRCUITS.find(c => c.id === id);
+            const fsContainer = document.getElementById('fs-container');
+            const csSection = document.getElementById('coming-soon-section');
+            const simFrame = document.getElementById('sim-frame');
+            
+            if (circuit && circuit.hasSim) {
+                fsContainer.style.display = 'block';
+                csSection.style.display = 'none';
+                simFrame.src = `simulators/${id}.html?lang=${currentLang}`;
+            } else {
+                fsContainer.style.display = 'none';
+                csSection.style.display = 'flex';
+                simFrame.src = '';
+            }
+
+            switchEduTab(currentTab);
+        }
+
+        // تغییر زبان سایت (فارسی / انگلیسی)
+        function switchLanguage(lang) {
+            currentLang = lang;
+            document.body.className = (lang === 'en') ? 'en' : '';
+            document.documentElement.lang = lang;
+            document.documentElement.dir = (lang === 'en') ? 'ltr' : 'rtl';
+            
+            // تغییر استایل دکمه زبان
+            document.getElementById('btn-fa').className = (lang === 'fa') ? 'active-lang' : '';
+            document.getElementById('btn-en').className = (lang === 'en') ? 'active-lang' : '';
+
+            // بروزرسانی متون عمومی UI
+            document.getElementById('main-title').textContent = dictUI[lang].title;
+            document.getElementById('txt-fs').textContent = document.fullscreenElement ? dictUI[lang].fsExit : dictUI[lang].fsEnter;
+            document.getElementById('txt-about').textContent = dictUI[lang].navAbout;
+            
+            document.getElementById('cs-title').textContent = dictUI[lang].csTitle;
+            document.getElementById('cs-desc').textContent = dictUI[lang].csDesc;
+
+            // بروزرسانی عناوین تب‌های آموزشی
+            for(let i = 0; i <= 4; i++) {
+                const tabEl = document.getElementById(`tab-${i}`);
+                if(tabEl) tabEl.textContent = dictUI[lang][`t${i}`];
+            }
+
+            // ترجمه کامل بخش "درباره ما" (خواست شما)
+            document.getElementById('abt-title').textContent = dictUI[lang].aboutTitle;
+            document.getElementById('abt-desc').textContent = dictUI[lang].aboutDesc;
+            document.getElementById('lbl-email').textContent = dictUI[lang].lblEmail;
+            document.getElementById('lbl-usdt').textContent = dictUI[lang].lblUsdt;
+            document.getElementById('lbl-btc').textContent = dictUI[lang].lblBtc;
+            
+            document.querySelectorAll('.copy-btn-txt').forEach(el => {
+                if(!el.classList.contains('copied')) {
+                    el.textContent = dictUI[lang].clickToCopy;
+                }
+            });
+
+            // رندر مجدد سایدبار با زبان جدید
+            renderSidebar();
+
+            // در صورتی که آی‌فریم شبیه‌ساز باز است، پارامتر lang آن را تغییر بده
+            const simFrame = document.getElementById('sim-frame');
+            if(simFrame.src && simFrame.src.includes('simulators/')) {
+                const url = new URL(simFrame.src);
+                url.searchParams.set('lang', lang);
+                simFrame.src = url.toString();
+            }
+
+            switchEduTab(currentTab);
+        }
+
+        // نمایش بخش درباره ما و حمایت
+        function showAboutSection() {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-about').classList.add('active');
+
             document.getElementById('fs-container').style.display = 'none';
+            document.getElementById('coming-soon-section').style.display = 'none';
             document.getElementById('educational-section').style.display = 'none';
             document.getElementById('about-section').style.display = 'block';
-
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
         }
 
-        function switchEduTab(tabName) {
-            currentEduTab = tabName;
+        // تغییر تب‌های بخش آموزش و محاسبات
+        function switchEduTab(index, btnElement) {
+            currentTab = index;
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
             
-            document.querySelectorAll('.edu-tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+            if(btnElement) {
+                btnElement.classList.add('active');
+            } else if(tabs[index]) {
+                tabs[index].classList.add('active');
+            }
+
+            const contentArea = document.getElementById('edu-content-area');
             
-            document.getElementById('edu-content-area').innerHTML = eduData[currentLang][currentSim][tabName];
+            // تب محاسبات هوشمند (تب شماره 4)
+            if(index === 4) {
+                renderCalculator(contentArea);
+                return;
+            }
+
+            if (eduData[currentLang] && eduData[currentLang][currentCircuit] && eduData[currentLang][currentCircuit][index]) {
+                contentArea.innerHTML = eduData[currentLang][currentCircuit][index];
+            } else {
+                contentArea.innerHTML = `<p style="color:var(--text-muted); padding: 10px;">${currentLang === 'fa' ? 'محتوای آموزشی به زودی تکمیل می‌شود.' : 'Educational content coming soon.'}</p>`;
+            }
         }
 
-        function copyExactText(exactString, badgeId) {
-            if (!exactString) return;
-            navigator.clipboard.writeText(exactString).then(() => {
-                const badge = document.getElementById(badgeId);
-                const originalText = dictUI[currentLang].clickToCopy;
-                
-                badge.innerText = dictUI[currentLang].copiedText;
-                badge.closest('.copy-card').classList.add('copied');
+        // ==========================================
+        // 7. توابع ماشین حساب هوشمند
+        // ==========================================
+        function renderCalculator(container) {
+            const conf = calcConfig[currentCircuit];
+            if(!conf) {
+                container.innerHTML = `<p style="color:var(--logo-gold); padding: 15px; text-align: center;">${dictUI[currentLang].calcNo}</p>`;
+                return;
+            }
 
-                setTimeout(() => {
-                    badge.innerText = originalText;
-                    badge.closest('.copy-card').classList.remove('copied');
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
+            let html = `<div class="calc-wrapper">`;
+            
+            // پنل ورودی‌ها
+            html += `<div class="calc-panel"><h4>⚙️ ${dictUI[currentLang].calcInput}</h4>`;
+            conf.inputs.forEach(inp => {
+                html += `
+                <div class="input-group">
+                    <label>${inp[currentLang]}</label>
+                    <input type="number" id="cin_${inp.id}" value="${inp.def}" step="any" oninput="runCalculator()">
+                </div>`;
+            });
+            html += `</div>`;
+
+            // پنل خروجی‌ها
+            html += `<div class="calc-panel"><h4>📊 ${dictUI[currentLang].calcOutput}</h4><div id="calc-results-box">`;
+            
+            const defaultVals = {};
+            conf.inputs.forEach(inp => defaultVals[inp.id] = inp.def);
+            const results = conf.calc(defaultVals);
+            
+            results.forEach((res, idx) => {
+                html += `
+                <div class="result-row">
+                    <span class="result-label">${res[currentLang]}</span>
+                    <span class="result-value" id="cres_${idx}">${res.val}</span>
+                </div>`;
+            });
+            
+            html += `</div></div></div>`;
+            container.innerHTML = html;
+        }
+
+        function runCalculator() {
+            const conf = calcConfig[currentCircuit];
+            if(!conf) return;
+            
+            const vals = {};
+            conf.inputs.forEach(inp => {
+                const el = document.getElementById(`cin_${inp.id}`);
+                vals[inp.id] = parseFloat(el.value) || 0;
+            });
+
+            const results = conf.calc(vals);
+            
+            results.forEach((res, idx) => {
+                const resEl = document.getElementById(`cres_${idx}`);
+                if(resEl && resEl.textContent !== String(res.val)) {
+                    resEl.textContent = res.val;
+                    // افکت درخشش سینمایی (Glow)
+                    resEl.classList.remove('flash');
+                    void resEl.offsetWidth; // ریست انیمیشن
+                    resEl.classList.add('flash');
+                    setTimeout(() => resEl.classList.remove('flash'), 300);
+                }
             });
         }
 
+        // ==========================================
+        // 8. حالت تمام‌صفحه اختصاصی شبیه‌ساز (ایفریم)
+        // ==========================================
         function toggleFullScreen() {
-            const elem = document.getElementById('fs-container');
+            const fsContainer = document.getElementById('fs-container');
+            const txtBtn = document.getElementById('txt-fs');
+            
+            // اجرای تمام‌صفحه فقط و فقط روی کادر شبیه‌ساز
             if (!document.fullscreenElement) {
-                if (elem.requestFullscreen) elem.requestFullscreen();
-                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-                else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+                if (fsContainer.style.display !== 'none') {
+                    if (fsContainer.requestFullscreen) {
+                        fsContainer.requestFullscreen();
+                    } else if (fsContainer.webkitRequestFullscreen) {
+                        fsContainer.webkitRequestFullscreen();
+                    } else if (fsContainer.msRequestFullscreen) {
+                        fsContainer.msRequestFullscreen();
+                    }
+                    txtBtn.textContent = dictUI[currentLang].fsExit;
+                }
             } else {
-                if (document.exitFullscreen) document.exitFullscreen();
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+                txtBtn.textContent = dictUI[currentLang].fsEnter;
             }
         }
 
-        document.addEventListener('fullscreenchange', () => {
-            const isFS = !!document.fullscreenElement;
-            document.getElementById('fs-text').innerText = isFS ? dictUI[currentLang].fsExit : dictUI[currentLang].fsEnter;
-        });
+        // شنونده تغییر حالت تمام‌صفحه (برای کلید ESC)
+        document.addEventListener('fullscreenchange', handleFSChange);
+        document.addEventListener('webkitfullscreenchange', handleFSChange);
 
-        // Initialization
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('val-usdt').innerText = usdtAddress;
-            document.getElementById('val-btc').innerText = btcAddress;
-
-            const urlParams = new URLSearchParams(window.location.search);
-            if(urlParams.get('lang') === 'en') {
-                switchLanguage('en');
+        function handleFSChange() {
+            const txtBtn = document.getElementById('txt-fs');
+            if (!document.fullscreenElement && !document.webkitIsFullScreen) {
+                txtBtn.textContent = dictUI[currentLang].fsEnter;
             } else {
-                switchEduTab('concept');
+                txtBtn.textContent = dictUI[currentLang].fsExit;
+            }
+        }
+
+        // ==========================================
+        // 9. کپی آدرس‌های حمایت
+        // ==========================================
+        function copyText(textToCopy, elementId) {
+            const ta = document.createElement('textarea');
+            ta.value = textToCopy;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+
+            const btn = document.getElementById(elementId);
+            if(btn) {
+                btn.textContent = dictUI[currentLang].copiedText;
+                btn.classList.add('copied');
+                btn.style.background = 'rgba(16, 185, 129, 0.2)';
+                btn.style.color = '#10b981';
+
+                setTimeout(() => {
+                    btn.textContent = dictUI[currentLang].clickToCopy;
+                    btn.classList.remove('copied');
+                    btn.style.background = 'rgba(0, 242, 254, 0.1)';
+                    btn.style.color = 'var(--neon-accent)';
+                }, 2000);
+            }
+        }
+
+        // ==========================================
+        // 10. راه‌اندازی اولیه پروژه (DOMContentLoaded)
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // ساخت منوی سایدبار (منوها بسته خواهند بود)
+            renderSidebar();
+
+            // لود اولیه اولین مدار (Buck)
+            loadSimulator('buck', null);
+
+            // بررسی پارامتر زبان در URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('lang') === 'en') {
+                switchLanguage('en');
             }
         });
     </script>
