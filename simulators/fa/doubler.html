@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شبیه‌ساز مدار دوبرابر کننده ولتاژ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0f1d;
+            --panel-bg: rgba(18, 26, 47, 0.75);
+            --accent-cyan: #00f2fe;
+            --accent-blue: #4facfe;
+            --accent-gold: #ffb703;
+            --text-color: #e2e8f0;
+            --border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+            stroke: #0a0f1d;
+        }
+
+        .title-container h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .title-container p {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .app-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .glass-panel h2 {
+            font-size: 1rem;
+            color: var(--accent-cyan);
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .slider-value {
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn.active {
+            background: var(--accent-blue);
+            color: #0a0f1d;
+            font-weight: 700;
+            border-color: var(--accent-blue);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .metric-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .metric-card span {
+            display: block;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-top: 5px;
+            direction: ltr;
+        }
+
+        .info-box {
+            background: rgba(0, 242, 254, 0.05);
+            border-right: 3px solid var(--accent-cyan);
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 0;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 440px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .scopes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 250px;
+        }
+
+        .scope-card {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .scope-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .legend {
+            display: flex;
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+        }
+
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .scope-canvas-container {
+            flex: 1;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+            </svg>
+        </div>
+        <div class="title-container">
+            <h1>شبیه‌ساز مدار دوبرابر کننده ولتاژ (گریناشر)</h1>
+            <p>Voltage Doubler Simulator</p>
+        </div>
+    </header>
+
+    <div class="app-container">
+        
+        <div class="sidebar">
+            <div class="glass-panel">
+                <h2>تنظیمات پارامترها</h2>
+                
+                <div class="control-group">
+                    <div class="label-row">
+                        <span>ولتاژ ورودی پیک ($V_m$)</span>
+                        <span class="slider-value" id="valVm">30 V</span>
+                    </div>
+                    <input type="range" id="Vm" min="10" max="100" value="30" step="1">
+                </div>
+
+                <div class="control-group">
+                    <div class="label-row">
+                        <span>فرکانس ($f$)</span>
+                        <span class="slider-value" id="valFreq">50 Hz</span>
+                    </div>
+                    <input type="range" id="freq" min="10" max="100" value="50" step="1">
+                </div>
+
+                <div class="control-group">
+                    <div class="label-row">
+                        <span>خازن پمپ ($C_1$)</span>
+                        <span class="slider-value" id="valC1">47 µF</span>
+                    </div>
+                    <input type="range" id="C1" min="1" max="200" value="47" step="1">
+                </div>
+
+                <div class="control-group">
+                    <div class="label-row">
+                        <span>خازن ذخیره ($C_2$)</span>
+                        <span class="slider-value" id="valC2">47 µF</span>
+                    </div>
+                    <input type="range" id="C2" min="1" max="200" value="47" step="1">
+                </div>
+
+                <div class="control-group">
+                    <div class="label-row">
+                        <span>مقاومت بار ($R_L$)</span>
+                        <span class="slider-value" id="valRL">2000 Ω</span>
+                    </div>
+                    <input type="range" id="RL" min="100" max="10000" value="2000" step="100">
+                </div>
+
+                <div class="label-row" style="margin-bottom: 8px;"><span>جهت جریان</span></div>
+                <div class="btn-group">
+                    <button class="btn active" id="btnConv">قراردادی (+)</button>
+                    <button class="btn" id="btnElec">الکترونی (-)</button>
+                </div>
+
+                <div class="btn-group" style="margin-top: 15px;">
+                    <button class="btn" id="btnPause">توقف / ادامه</button>
+                    <button class="btn" id="btnReset">بازنشانی</button>
+                </div>
+            </div>
+
+            <div class="glass-panel">
+                <h2>پارامترهای خروجی</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span>ولتاژ متوسط ($V_{avg}$)</span>
+                        <div class="metric-value" id="mVout">0.0 V</div>
+                    </div>
+                    <div class="metric-card">
+                        <span>ضریب دوبرابری</span>
+                        <div class="metric-value" id="mRatio" style="color: var(--accent-gold);">0.0 ×</div>
+                    </div>
+                    <div class="metric-card">
+                        <span>ولتاژ ریپل ($V_{r}$)</span>
+                        <div class="metric-value" id="mRipple">0.0 V</div>
+                    </div>
+                    <div class="metric-card">
+                        <span>جریان بار ($I_{L}$)</span>
+                        <div class="metric-value" id="mIout">0.0 mA</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel">
+                <div class="info-box">
+                    <strong>عملکرد دوبرابر کننده نیم‌موج:</strong><br>
+                    در نیم‌سیکل منفی، $D_1$ روشن شده و $C_1$ به اندازه $V_m$ شارژ می‌شود. در نیم‌سیکل مثبت، ولتاژ ورودی با ولتاژ $C_1$ جمع شده ($2V_m$) و از طریق $D_2$، خازن $C_2$ (خروجی) را شارژ می‌کند.
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="glass-panel">
+                <div class="canvas-container">
+                    <canvas id="circuitCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="scopes-grid">
+                <div class="glass-panel scope-card">
+                    <div class="scope-header">
+                        <span>نوسان‌نمای ۱: ولتاژ ورودی و گره میانی</span>
+                        <div class="legend">
+                            <div class="legend-item"><div class="legend-color" style="background: var(--accent-blue);"></div> $V_{in}$</div>
+                            <div class="legend-item"><div class="legend-color" style="background: var(--accent-cyan);"></div> $V_B$</div>
+                        </div>
+                    </div>
+                    <div class="scope-canvas-container">
+                        <canvas id="scope1Canvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel scope-card">
+                    <div class="scope-header">
+                        <span>نوسان‌نمای ۲: ولتاژ خروجی و حد ایده‌آل</span>
+                        <div class="legend">
+                            <div class="legend-item"><div class="legend-color" style="background: var(--accent-gold);"></div> $V_{out}$</div>
+                            <div class="legend-item"><div class="legend-color" style="background: rgba(255,255,255,0.5); border: 1px dashed #fff;"></div> $2V_m$</div>
+                        </div>
+                    </div>
+                    <div class="scope-canvas-container">
+                        <canvas id="scope2Canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        (function() {
+            "use strict";
+
+            // State & Parameters
+            const params = {
+                Vm: 30,
+                freq: 50,
+                C1: 47,
+                C2: 47,
+                RL: 2000,
+                flowDir: 1 // 1: Conv, -1: Elec
+            };
+
+            const state = {
+                time: 0,
+                v_in: 0,
+                v_C1: 0,
+                v_C2: 0,
+                v_B: 0,
+                v_out: 0,
+                i_d1: 0,
+                i_d2: 0,
+                i_load: 0,
+                isRunning: true
+            };
+
+            const history = [];
+            const HISTORY_MAX = 600;
+
+            // Particles
+            const particles = [];
+            for(let i=0; i<60; i++) {
+                particles.push({
+                    path: Math.floor(Math.random() * 3), // 0: D1 loop, 1: D2 loop, 2: Load loop
+                    progress: Math.random(),
+                    speed: 0.01 + Math.random() * 0.01
+                });
+            }
+
+            // DOM Elements
+            const inputs = ['Vm', 'freq', 'C1', 'C2', 'RL'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                const valEl = document.getElementById('val' + id);
+                el.addEventListener('input', (e) => {
+                    params[id] = parseFloat(e.target.value);
+                    let unit = '';
+                    if(id === 'Vm') unit = ' V';
+                    if(id === 'freq') unit = ' Hz';
+                    if(id.startsWith('C')) unit = ' µF';
+                    if(id === 'RL') unit = ' Ω';
+                    valEl.textContent = params[id] + unit;
+                });
+            });
+
+            document.getElementById('btnConv').addEventListener('click', function() {
+                params.flowDir = 1;
+                this.classList.add('active');
+                document.getElementById('btnElec').classList.remove('active');
+            });
+
+            document.getElementById('btnElec').addEventListener('click', function() {
+                params.flowDir = -1;
+                this.classList.add('active');
+                document.getElementById('btnConv').classList.remove('active');
+            });
+
+            document.getElementById('btnPause').addEventListener('click', function() {
+                state.isRunning = !state.isRunning;
+                this.textContent = state.isRunning ? "توقف / ادامه" : "ادامه شبیه‌سازی";
+            });
+
+            document.getElementById('btnReset').addEventListener('click', () => {
+                state.time = 0;
+                state.v_C1 = 0;
+                state.v_C2 = 0;
+                history.length = 0;
+            });
+
+            // Canvas Setup
+            const cvsMain = document.getElementById('circuitCanvas');
+            const cvsScope1 = document.getElementById('scope1Canvas');
+            const cvsScope2 = document.getElementById('scope2Canvas');
+
+            function resizeCanvas(canvas) {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                const ctx = canvas.getContext('2d');
+                ctx.scale(dpr, dpr);
+                return { ctx, w: rect.width, h: rect.height };
+            }
+
+            // Physics Engine
+            function updatePhysics(dt) {
+                const omega = 2 * Math.PI * params.freq;
+                state.v_in = params.Vm * Math.sin(omega * state.time);
+                
+                state.v_B = state.v_in + state.v_C1;
+
+                const Vd = 0.7; // Diode Drop
+                const rd = 1.0; // Diode resistance
+
+                // D1: Ground (0) to Node B
+                const v_d1 = -state.v_B;
+                let i_d1 = 0;
+                if(v_d1 > Vd) i_d1 = (v_d1 - Vd) / rd;
+
+                // D2: Node B to Output (Node C)
+                const v_d2 = state.v_B - state.v_C2;
+                let i_d2 = 0;
+                if(v_d2 > Vd) i_d2 = (v_d2 - Vd) / rd;
+
+                // Load
+                const i_load = state.v_C2 / params.RL;
+
+                // Capacitors integration
+                const c1_F = params.C1 * 1e-6;
+                const c2_F = params.C2 * 1e-6;
+
+                const dv_C1 = ((i_d1 - i_d2) / c1_F) * dt;
+                const dv_C2 = ((i_d2 - i_load) / c2_F) * dt;
+
+                state.v_C1 += dv_C1;
+                state.v_C2 += dv_C2;
+                if(state.v_C2 < 0) state.v_C2 = 0;
+
+                state.v_out = state.v_C2;
+                state.i_d1 = i_d1;
+                state.i_d2 = i_d2;
+                state.i_load = i_load;
+
+                state.time += dt;
+
+                history.push({
+                    vin: state.v_in,
+                    vb: state.v_B,
+                    vout: state.v_out
+                });
+                if(history.length > HISTORY_MAX) history.shift();
+            }
+
+            function updateMetrics() {
+                if(history.length < 100) return;
+                const recent = history.slice(-Math.floor(1 / params.freq / 0.0001)); // Approx 1 cycle if dt=0.0001
+                if(recent.length === 0) return;
+
+                let sumVout = 0, maxVout = -Infinity, minVout = Infinity;
+                for(let i=0; i<recent.length; i++) {
+                    const v = recent[i].vout;
+                    sumVout += v;
+                    if(v > maxVout) maxVout = v;
+                    if(v < minVout) minVout = v;
+                }
+                const vAvg = sumVout / recent.length;
+                const vRipple = maxVout - minVout;
+                const ratio = vAvg / params.Vm;
+                const iLoad = (vAvg / params.RL) * 1000; // mA
+
+                document.getElementById('mVout').textContent = vAvg.toFixed(1) + ' V';
+                document.getElementById('mRatio').textContent = ratio.toFixed(2) + ' ×';
+                document.getElementById('mRipple').textContent = vRipple.toFixed(2) + ' V';
+                document.getElementById('mIout').textContent = iLoad.toFixed(1) + ' mA';
+            }
+
+            // Drawing Helpers
+            function drawComponent(ctx, type, x, y, label, val, isOn=false, dir='up') {
+                ctx.save();
+                ctx.translate(x, y);
+                
+                if(type === 'source') {
+                    ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI*2);
+                    ctx.fillStyle = '#0a0f1d'; ctx.fill();
+                    ctx.strokeStyle = '#4facfe'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.beginPath();
+                    for(let i=-10; i<=10; i++) {
+                        ctx.lineTo(i, Math.sin(i*0.3)*8);
+                    }
+                    ctx.stroke();
+                }
+                else if(type === 'cap_h') {
+                    ctx.fillStyle = '#0a0f1d'; ctx.fillRect(-8, -15, 16, 30);
+                    ctx.fillStyle = '#00f2fe';
+                    ctx.fillRect(-6, -15, 3, 30);
+                    ctx.fillRect(3, -15, 3, 30);
+                }
+                else if(type === 'cap_v') {
+                    ctx.fillStyle = '#0a0f1d'; ctx.fillRect(-15, -8, 30, 16);
+                    ctx.fillStyle = '#ffb703';
+                    ctx.fillRect(-15, -6, 30, 3);
+                    ctx.fillRect(-15, 3, 30, 3);
+                }
+                else if(type === 'diode_v') {
+                    ctx.fillStyle = isOn ? '#00f2fe' : '#334155';
+                    ctx.strokeStyle = isOn ? '#fff' : '#94a3b8';
+                    ctx.lineWidth = 2;
+                    if(isOn) { ctx.shadowColor = '#00f2fe'; ctx.shadowBlur = 10; }
+                    
+                    ctx.beginPath();
+                    if(dir === 'up') {
+                        ctx.moveTo(-12, 12); ctx.lineTo(12, 12); ctx.lineTo(0, -12); ctx.closePath();
+                        ctx.fill(); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(-12, -12); ctx.lineTo(12, -12); ctx.stroke();
+                    }
+                }
+                else if(type === 'diode_h') {
+                    ctx.fillStyle = isOn ? '#ffb703' : '#334155';
+                    ctx.strokeStyle = isOn ? '#fff' : '#94a3b8';
+                    ctx.lineWidth = 2;
+                    if(isOn) { ctx.shadowColor = '#ffb703'; ctx.shadowBlur = 10; }
+                    
+                    ctx.beginPath();
+                    if(dir === 'right') {
+                        ctx.moveTo(-12, -12); ctx.lineTo(-12, 12); ctx.lineTo(12, 0); ctx.closePath();
+                        ctx.fill(); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(12, -12); ctx.lineTo(12, 12); ctx.stroke();
+                    }
+                }
+                else if(type === 'resistor') {
+                    ctx.strokeStyle = '#ffb703'; ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -20);
+                    for(let i=0; i<=6; i++) {
+                        ctx.lineTo(i%2===0 ? 8 : -8, -20 + i*(40/6));
+                    }
+                    ctx.stroke();
+                }
+                else if(type === 'ground') {
+                    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,10); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-12,10); ctx.lineTo(12,10); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-8,15); ctx.lineTo(8,15); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-4,20); ctx.lineTo(4,20); ctx.stroke();
+                }
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = '12px Vazirmatn';
+                ctx.textAlign = 'center';
+                if(label) {
+                    if(type === 'cap_h' || type === 'diode_h') ctx.fillText(label, 0, -25);
+                    else if(type === 'cap_v' || type === 'resistor') { ctx.textAlign='right'; ctx.fillText(label, -20, 0); }
+                    else ctx.fillText(label, -30, 0);
+                }
+                if(val) {
+                    ctx.fillStyle = '#94a3b8';
+                    if(type === 'cap_h' || type === 'diode_h') ctx.fillText(val, 0, 30);
+                    else if(type === 'cap_v' || type === 'resistor') { ctx.textAlign='right'; ctx.fillText(val, -20, 15); }
+                }
+
+                ctx.restore();
+            }
+
+            function getPointAlongPath(pathPts, progress) {
+                let totalLen = 0;
+                const lens = [];
+                for(let i=0; i<pathPts.length-1; i++) {
+                    const dx = pathPts[i+1].x - pathPts[i].x;
+                    const dy = pathPts[i+1].y - pathPts[i].y;
+                    const l = Math.hypot(dx, dy);
+                    lens.push(l);
+                    totalLen += l;
+                }
+                let target = progress * totalLen;
+                let acc = 0;
+                for(let i=0; i<lens.length; i++) {
+                    if(acc + lens[i] >= target) {
+                        const t = (target - acc) / lens[i];
+                        return {
+                            x: pathPts[i].x + (pathPts[i+1].x - pathPts[i].x) * t,
+                            y: pathPts[i].y + (pathPts[i+1].y - pathPts[i].y) * t
+                        };
+                    }
+                    acc += lens[i];
+                }
+                return pathPts[pathPts.length-1];
+            }
+
+            function drawMain() {
+                const { ctx, w, h } = resizeCanvas(cvsMain);
+                ctx.clearRect(0, 0, w, h);
+
+                // Coordinates
+                const yTop = 120, yBot = 320;
+                const xSrc = 150, xC1 = 250, xNodeB = 350, xD2 = 450, xNodeC = 550, xRL = 700;
+
+                // Base Wires
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                ctx.beginPath();
+                // Top rail
+                ctx.moveTo(xSrc, yTop); ctx.lineTo(xRL, yTop);
+                // Bottom rail
+                ctx.moveTo(xSrc, yBot); ctx.lineTo(xRL, yBot);
+                // Verticals
+                ctx.moveTo(xSrc, yTop); ctx.lineTo(xSrc, yBot);
+                ctx.moveTo(xNodeB, yTop); ctx.lineTo(xNodeB, yBot);
+                ctx.moveTo(xNodeC, yTop); ctx.lineTo(xNodeC, yBot);
+                ctx.moveTo(xRL, yTop); ctx.lineTo(xRL, yBot);
+                ctx.stroke();
+
+                // Active Glows
+                if(state.i_d1 > 0.05) {
+                    ctx.strokeStyle = 'rgba(0, 242, 254, 0.5)'; ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.moveTo(xSrc, yBot); ctx.lineTo(xSrc, yTop); ctx.lineTo(xNodeB, yTop);
+                    ctx.lineTo(xNodeB, yBot); ctx.lineTo(xSrc, yBot);
+                    ctx.stroke();
+                }
+                if(state.i_d2 > 0.05) {
+                    ctx.strokeStyle = 'rgba(255, 183, 3, 0.5)'; ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.moveTo(xSrc, yBot); ctx.lineTo(xSrc, yTop); ctx.lineTo(xNodeC, yTop);
+                    ctx.lineTo(xNodeC, yBot); ctx.lineTo(xSrc, yBot);
+                    ctx.stroke();
+                }
+
+                // Components
+                drawComponent(ctx, 'source', xSrc, (yTop+yBot)/2, 'AC', state.v_in.toFixed(1)+'V');
+                drawComponent(ctx, 'cap_h', xC1, yTop, 'C1', params.C1+'µF');
+                drawComponent(ctx, 'diode_v', xNodeB, (yTop+yBot)/2, 'D1', '', state.i_d1>0.05, 'up');
+                drawComponent(ctx, 'diode_h', xD2, yTop, 'D2', '', state.i_d2>0.05, 'right');
+                drawComponent(ctx, 'cap_v', xNodeC, (yTop+yBot)/2, 'C2', params.C2+'µF');
+                drawComponent(ctx, 'resistor', xRL, (yTop+yBot)/2, 'RL', params.RL+'Ω');
+                drawComponent(ctx, 'ground', (xSrc+xRL)/2, yBot, '', '');
+
+                // Node Labels
+                ctx.fillStyle = '#4facfe'; ctx.fillText(`Vin = ${state.v_in.toFixed(1)}V`, xSrc, yTop - 20);
+                ctx.fillStyle = '#00f2fe'; ctx.fillText(`VB = ${state.v_B.toFixed(1)}V`, xNodeB, yTop - 20);
+                ctx.fillStyle = '#ffb703'; ctx.fillText(`Vout = ${state.v_out.toFixed(1)}V`, xNodeC, yTop - 20);
+
+                // Particles
+                const paths = [
+                    // Path 0: D1 Loop
+                    [{x:xSrc, y:yBot}, {x:xSrc, y:yTop}, {x:xNodeB, y:yTop}, {x:xNodeB, y:yBot}, {x:xSrc, y:yBot}],
+                    // Path 1: D2 Loop
+                    [{x:xSrc, y:yBot}, {x:xSrc, y:yTop}, {x:xNodeC, y:yTop}, {x:xNodeC, y:yBot}, {x:xSrc, y:yBot}],
+                    // Path 2: Load Loop
+                    [{x:xNodeC, y:yTop}, {x:xRL, y:yTop}, {x:xRL, y:yBot}, {x:xNodeC, y:yBot}, {x:xNodeC, y:yTop}]
+                ];
+
+                particles.forEach(p => {
+                    let active = false;
+                    let color = '#fff';
+                    let current = 0;
+
+                    if(p.path === 0 && state.i_d1 > 0.01) { active = true; color = '#00f2fe'; current = state.i_d1; }
+                    else if(p.path === 1 && state.i_d2 > 0.01) { active = true; color = '#ffb703'; current = state.i_d2; }
+                    else if(p.path === 2 && state.i_load > 0.001) { active = true; color = '#10b981'; current = state.i_load * 50; }
+
+                    if(active) {
+                        p.progress += p.speed * current * params.flowDir;
+                        if(p.progress > 1) p.progress -= 1;
+                        if(p.progress < 0) p.progress += 1;
+
+                        const pt = getPointAlongPath(paths[p.path], p.progress);
+                        ctx.beginPath();
+                        ctx.arc(pt.x, pt.y, 3, 0, Math.PI*2);
+                        ctx.fillStyle = color;
+                        ctx.shadowColor = color;
+                        ctx.shadowBlur = 8;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                });
+            }
+
+            function drawScopes() {
+                const s1 = resizeCanvas(cvsScope1);
+                const s2 = resizeCanvas(cvsScope2);
+
+                [s1, s2].forEach(s => {
+                    s.ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                    s.ctx.lineWidth = 1;
+                    s.ctx.beginPath();
+                    for(let x=0; x<s.w; x+=40) { s.ctx.moveTo(x,0); s.ctx.lineTo(x,s.h); }
+                    for(let y=0; y<s.h; y+=30) { s.ctx.moveTo(0,y); s.ctx.lineTo(s.w,y); }
+                    s.ctx.stroke();
+                });
+
+                if(history.length < 2) return;
+
+                const maxV = params.Vm * 2.5;
+                const stepX = s1.w / HISTORY_MAX;
+
+                // Scope 1: Vin & VB
+                const cy1 = s1.h / 2;
+                const sy1 = (s1.h / 2 - 10) / maxV;
+
+                s1.ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                s1.ctx.setLineDash([4,4]);
+                s1.ctx.beginPath(); s1.ctx.moveTo(0, cy1); s1.ctx.lineTo(s1.w, cy1); s1.ctx.stroke();
+                s1.ctx.setLineDash([]);
+
+                s1.ctx.lineWidth = 2;
+                // Vin
+                s1.ctx.strokeStyle = '#4facfe';
+                s1.ctx.beginPath();
+                history.forEach((h, i) => {
+                    const x = i * stepX; const y = cy1 - h.vin * sy1;
+                    if(i===0) s1.ctx.moveTo(x,y); else s1.ctx.lineTo(x,y);
+                });
+                s1.ctx.stroke();
+                // VB
+                s1.ctx.strokeStyle = '#00f2fe';
+                s1.ctx.beginPath();
+                history.forEach((h, i) => {
+                    const x = i * stepX; const y = cy1 - h.vb * sy1;
+                    if(i===0) s1.ctx.moveTo(x,y); else s1.ctx.lineTo(x,y);
+                });
+                s1.ctx.stroke();
+
+                // Scope 2: Vout & 2Vm
+                const cy2 = s2.h - 20;
+                const sy2 = (s2.h - 30) / maxV;
+
+                s2.ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                s2.ctx.beginPath(); s2.ctx.moveTo(0, cy2); s2.ctx.lineTo(s2.w, cy2); s2.ctx.stroke();
+
+                // 2Vm Limit
+                const y2Vm = cy2 - (2 * params.Vm) * sy2;
+                s2.ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                s2.ctx.setLineDash([5,5]);
+                s2.ctx.beginPath(); s2.ctx.moveTo(0, y2Vm); s2.ctx.lineTo(s2.w, y2Vm); s2.ctx.stroke();
+                s2.ctx.setLineDash([]);
+
+                // Vout
+                s2.ctx.strokeStyle = '#ffb703';
+                s2.ctx.lineWidth = 2.5;
+                s2.ctx.beginPath();
+                history.forEach((h, i) => {
+                    const x = i * stepX; const y = cy2 - h.vout * sy2;
+                    if(i===0) s2.ctx.moveTo(x,y); else s2.ctx.lineTo(x,y);
+                });
+                s2.ctx.stroke();
+            }
+
+            // Main Loop
+            let lastTime = performance.now();
+            function animate(now) {
+                const dt = Math.min((now - lastTime) / 1000, 0.05);
+                lastTime = now;
+
+                if(state.isRunning) {
+                    const subSteps = 50;
+                    const subDt = dt / subSteps;
+                    for(let i=0; i<subSteps; i++) {
+                        updatePhysics(subDt);
+                    }
+                    updateMetrics();
+                }
+
+                drawMain();
+                drawScopes();
+
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener('resize', () => { drawMain(); drawScopes(); });
+            requestAnimationFrame(animate);
+
+        })();
+    </script>
+</body>
+</html>
