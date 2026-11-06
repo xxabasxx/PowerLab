@@ -76,7 +76,7 @@ const eduData = {
             {cat:'app',  id:'ups',            hasSim:false, fa:'منبع تغذیه (UPS)',     en:'UPS'},
             {cat:'app',  id:'hbridge',        hasSim:false, fa:'H-Bridge موتور DC',    en:'DC Motor H-Bridge'},
             {cat:'app',  id:'vfd',            hasSim:false, fa:'درایو موتور AC (VFD)', en:'AC Motor Drive (VFD)'},
-            {cat:'app',  id:'mppt',           hasSim:true, fa:'ردیاب MPPT خورشیدی',   en:'Solar MPPT Tracker'}
+            {cat:'app',  id:'mppt',           hasSim:false, fa:'ردیاب MPPT خورشیدی',   en:'Solar MPPT Tracker'}
         ];
 
        // 3. لغت‌نامه و متون ترجمه‌شده (نسخه کامل و تست شده)
