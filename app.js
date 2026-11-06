@@ -47,8 +47,8 @@ const eduData = {
 {cat:'rect', id:'multiplier',     hasSim:true, fa:'چندبرابرکننده ولتاژ',      en:'Voltage Multiplier'},
             
             // Inverters (6)
-            {cat:'inv',  id:'inv_half',   hasSim:false, fa:'اینورتر نیم‌پل تک‌فاز',    en:'1-Phase Half-Bridge Inv.'},
-            {cat:'inv',  id:'inv_full',   hasSim:false, fa:'اینورتر تمام‌پل تک‌فاز',   en:'1-Phase Full-Bridge Inv.'},
+            {cat:'inv',  id:'inv_half',   hasSim:true, fa:'اینورتر نیم‌پل تک‌فاز',    en:'1-Phase Half-Bridge Inv.'},
+            {cat:'inv',  id:'inv_full',   hasSim:true, fa:'اینورتر تمام‌پل تک‌فاز',   en:'1-Phase Full-Bridge Inv.'},
             {cat:'inv',  id:'inv_three',  hasSim:false, fa:'اینورتر سه‌فاز',           en:'3-Phase Inverter'},
             {cat:'inv',  id:'spwm',       hasSim:false, fa:'اینورتر SPWM',             en:'SPWM Inverter'},
             {cat:'inv',  id:'multilevel', hasSim:false, fa:'اینورتر چندسطحی',          en:'Multilevel Inverter'},
