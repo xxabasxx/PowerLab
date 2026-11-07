@@ -1282,7 +1282,7 @@ if (homeBtn) homeBtn.classList.add('active');
         setTimeout(() => animateCounter('stat-circuits', 43, 2000), 1200);
         setTimeout(() => animateCounter('stat-categories', 6, 1500), 1400);
         setTimeout(() => animateCounter('stat-formulas', 120, 2500), 1600);
-        setTimeout(() => animateCounter('stat-live', 5, 1200), 1800);
+        setTimeout(() => animateCounter('stat-live', 30, 1200), 1800);
     });
 })();
 
