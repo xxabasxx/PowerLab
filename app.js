@@ -46,13 +46,14 @@ const eduData = {
 {cat:'rect', id:'doubler',        hasSim:true, fa:'دوبل‌کننده ولتاژ',         en:'Voltage Doubler'},
 {cat:'rect', id:'multiplier',     hasSim:true, fa:'چندبرابرکننده ولتاژ',      en:'Voltage Multiplier'},
             
+            
             // Inverters (6)
             {cat:'inv',  id:'inv_half',   hasSim:true, fa:'اینورتر نیم‌پل تک‌فاز',    en:'1-Phase Half-Bridge Inv.'},
             {cat:'inv',  id:'inv_full',   hasSim:true, fa:'اینورتر تمام‌پل تک‌فاز',   en:'1-Phase Full-Bridge Inv.'},
-            {cat:'inv',  id:'inv_three',  hasSim:false, fa:'اینورتر سه‌فاز',           en:'3-Phase Inverter'},
-            {cat:'inv',  id:'spwm',       hasSim:false, fa:'اینورتر SPWM',             en:'SPWM Inverter'},
-            {cat:'inv',  id:'multilevel', hasSim:false, fa:'اینورتر چندسطحی',          en:'Multilevel Inverter'},
-            {cat:'inv',  id:'resonant',   hasSim:false, fa:'اینورتر رزونانسی',         en:'Resonant Inverter'},
+            {cat:'inv',  id:'inv_three',  hasSim:true, fa:'اینورتر سه‌فاز',           en:'3-Phase Inverter'},
+            {cat:'inv',  id:'spwm',       hasSim:true, fa:'اینورتر SPWM',             en:'SPWM Inverter'},
+            {cat:'inv',  id:'multilevel', hasSim:true, fa:'اینورتر چندسطحی',          en:'Multilevel Inverter'},
+            {cat:'inv',  id:'resonant',   hasSim:true, fa:'اینورتر رزونانسی',         en:'Resonant Inverter'},
             
             // AC-AC (3)
             {cat:'acac', id:'dimmer',     hasSim:false, fa:'دیمر (تریاک)',             en:'TRIAC Dimmer'},
