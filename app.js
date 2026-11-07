@@ -46,7 +46,6 @@ const eduData = {
 {cat:'rect', id:'doubler',        hasSim:true, fa:'دوبل‌کننده ولتاژ',         en:'Voltage Doubler'},
 {cat:'rect', id:'multiplier',     hasSim:true, fa:'چندبرابرکننده ولتاژ',      en:'Voltage Multiplier'},
             
-            
             // Inverters (6)
             {cat:'inv',  id:'inv_half',   hasSim:true, fa:'اینورتر نیم‌پل تک‌فاز',    en:'1-Phase Half-Bridge Inv.'},
             {cat:'inv',  id:'inv_full',   hasSim:true, fa:'اینورتر تمام‌پل تک‌فاز',   en:'1-Phase Full-Bridge Inv.'},
@@ -168,6 +167,822 @@ const dictUI = {
         // 4. موتور ماشین‌حساب هوشمند (Live Calculator)
         // ==========================================
         const calcConfig = {
+
+
+// ==========================================
+// بخش 1: یکسوکننده‌های باقی‌مانده (5 مدار)
+// ==========================================
+
+threephase_half: {
+    inputs: [
+        { id: 'vm', def: 311, fa: 'ولتاژ پیک فاز (V)', en: 'Phase Peak Voltage (V)' },
+        { id: 'f',  def: 50,  fa: 'فرکانس شبکه (Hz)',  en: 'Line Frequency (Hz)' },
+        { id: 'r',  def: 50,  fa: 'مقاومت بار (Ω)',    en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        const vdc  = (3 * Math.sqrt(3) * v.vm) / (2 * Math.PI);
+        const vrms = v.vm * Math.sqrt(0.5 + (3 * Math.sqrt(3)) / (4 * Math.PI));
+        const iout = vdc / v.r;
+        const pdc  = vdc * iout;
+        const piv  = Math.sqrt(3) * v.vm;
+        return [
+            { fa: 'ولتاژ متوسط (Vdc)',   en: 'Average Voltage (Vdc)', val: vdc.toFixed(2) + ' V' },
+            { fa: 'ولتاژ مؤثر (Vrms)',    en: 'RMS Voltage (Vrms)',    val: vrms.toFixed(2) + ' V' },
+            { fa: 'جریان بار (Idc)',      en: 'Load Current (Idc)',    val: iout.toFixed(2) + ' A' },
+            { fa: 'توان خروجی (Pdc)',     en: 'Output Power (Pdc)',    val: pdc.toFixed(2) + ' W' },
+            { fa: 'فرکانس ریپل',          en: 'Ripple Frequency',      val: (3 * v.f).toFixed(0) + ' Hz' },
+            { fa: 'ولتاژ معکوس دیود (PIV)', en: 'Diode PIV',           val: piv.toFixed(2) + ' V' }
+        ];
+    }
+},
+
+threephase_full: {
+    inputs: [
+        { id: 'vm', def: 311, fa: 'ولتاژ پیک فاز (V)', en: 'Phase Peak Voltage (V)' },
+        { id: 'f',  def: 50,  fa: 'فرکانس شبکه (Hz)',  en: 'Line Frequency (Hz)' },
+        { id: 'r',  def: 50,  fa: 'مقاومت بار (Ω)',    en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        const vLine = Math.sqrt(3) * v.vm;
+        const vdc   = (3 * vLine) / Math.PI;
+        const vrms  = vLine * Math.sqrt(0.5 + (3 * Math.sqrt(3)) / (4 * Math.PI));
+        const iout  = vdc / v.r;
+        const pdc   = vdc * iout;
+        return [
+            { fa: 'ولتاژ پیک خط (VLL)',   en: 'Line-Line Peak',        val: vLine.toFixed(2) + ' V' },
+            { fa: 'ولتاژ متوسط (Vdc)',    en: 'Average Voltage (Vdc)', val: vdc.toFixed(2) + ' V' },
+            { fa: 'ولتاژ مؤثر (Vrms)',     en: 'RMS Voltage (Vrms)',    val: vrms.toFixed(2) + ' V' },
+            { fa: 'جریان بار (Idc)',       en: 'Load Current (Idc)',    val: iout.toFixed(2) + ' A' },
+            { fa: 'توان خروجی (Pdc)',      en: 'Output Power (Pdc)',    val: pdc.toFixed(2) + ' W' },
+            { fa: 'فرکانس ریپل',           en: 'Ripple Frequency',      val: (6 * v.f).toFixed(0) + ' Hz' },
+            { fa: 'ضریب ریپل',             en: 'Ripple Factor',         val: '4.2 %' }
+        ];
+    }
+},
+
+thyristor: {
+    inputs: [
+        { id: 'vm',    def: 311, fa: 'ولتاژ پیک ورودی (V)', en: 'Peak Input Voltage (V)' },
+        { id: 'alpha', def: 30,  fa: 'زاویه آتش α (درجه)',   en: 'Firing Angle α (deg)' },
+        { id: 'f',     def: 50,  fa: 'فرکانس شبکه (Hz)',     en: 'Line Frequency (Hz)' },
+        { id: 'r',     def: 50,  fa: 'مقاومت بار (Ω)',       en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        let alpha = Math.min(180, Math.max(0, v.alpha));
+        const aR = alpha * Math.PI / 180;
+        const vdc  = ((2 * v.vm) / Math.PI) * Math.cos(aR);
+        const vrms = v.vm * Math.sqrt(0.5 + Math.sin(2 * aR) / (4 * Math.PI) - aR / (2 * Math.PI));
+        const iout = vdc / v.r;
+        const pdc  = vdc * iout;
+        const mode = (vdc >= 0) ? 'یکسوسازی' : 'اینورتر';
+        return [
+            { fa: 'ولتاژ متوسط (Vdc)', en: 'Average Voltage (Vdc)', val: vdc.toFixed(2) + ' V' },
+            { fa: 'ولتاژ مؤثر (Vrms)',  en: 'RMS Voltage (Vrms)',    val: vrms.toFixed(2) + ' V' },
+            { fa: 'جریان بار (Idc)',    en: 'Load Current (Idc)',    val: iout.toFixed(2) + ' A' },
+            { fa: 'توان خروجی (Pdc)',   en: 'Output Power (Pdc)',    val: pdc.toFixed(2) + ' W' },
+            { fa: 'فرکانس ریپل',        en: 'Ripple Frequency',      val: (2 * v.f).toFixed(0) + ' Hz' },
+            { fa: 'حالت عملکرد',        en: 'Operating Mode',        val: mode }
+        ];
+    }
+},
+
+doubler: {
+    inputs: [
+        { id: 'vm', def: 311,  fa: 'ولتاژ پیک ورودی (V)', en: 'Peak Input Voltage (V)' },
+        { id: 'f',  def: 50,   fa: 'فرکانس ورودی (Hz)',   en: 'Input Frequency (Hz)' },
+        { id: 'c',  def: 470,  fa: 'خازن (μF)',           en: 'Capacitor (μF)' },
+        { id: 'r',  def: 1000, fa: 'مقاومت بار (Ω)',      en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        const videal = 2 * v.vm;
+        const iout = videal / v.r;
+        const ripple = iout / (v.f * (v.c / 1e6));
+        const vreal = Math.max(0, videal - ripple / 2);
+        const pdc = vreal * iout;
+        return [
+            { fa: 'ولتاژ خروجی ایده‌آل',  en: 'Ideal Output Voltage', val: videal.toFixed(2) + ' V' },
+            { fa: 'ولتاژ خروجی واقعی',    en: 'Real Output Voltage',  val: vreal.toFixed(2) + ' V' },
+            { fa: 'ریپل ولتاژ (p-p)',     en: 'Voltage Ripple',       val: ripple.toFixed(2) + ' V' },
+            { fa: 'جریان بار (Idc)',      en: 'Load Current',         val: iout.toFixed(3) + ' A' },
+            { fa: 'توان خروجی (Pdc)',     en: 'Output Power',         val: pdc.toFixed(2) + ' W' },
+            { fa: 'PIV دیود',             en: 'Diode PIV',            val: (2 * v.vm).toFixed(2) + ' V' }
+        ];
+    }
+},
+
+multiplier: {
+    inputs: [
+        { id: 'vm',    def: 311, fa: 'ولتاژ پیک ورودی (V)', en: 'Peak Input Voltage (V)' },
+        { id: 'n',     def: 3,   fa: 'تعداد مراحل (n)',     en: 'Number of Stages (n)' },
+        { id: 'f',     def: 50,  fa: 'فرکانس (Hz)',          en: 'Frequency (Hz)' },
+        { id: 'c',     def: 100, fa: 'خازن هر مرحله (μF)',   en: 'Stage Cap (μF)' },
+        { id: 'iload', def: 10,  fa: 'جریان بار (mA)',      en: 'Load Current (mA)' }
+    ],
+    calc: (v) => {
+        const n = Math.max(1, Math.round(v.n));
+        const videal = 2 * n * v.vm;
+        const iA = v.iload / 1000;
+        const cF = v.c / 1e6;
+        const vdrop = (iA / (v.f * cF)) * ((2*n*n*n)/3 + (n*n)/2 - n/6);
+        const vreal = Math.max(0, videal - vdrop);
+        const ripple = (iA * n) / (v.f * cF);
+        const pout = vreal * iA;
+        return [
+            { fa: 'تعداد مراحل',          en: 'Stages (n)',            val: n.toFixed(0) },
+            { fa: 'ولتاژ ایده‌آل',        en: 'Ideal Output',          val: videal.toFixed(1) + ' V' },
+            { fa: 'افت بار',              en: 'Load Drop',             val: vdrop.toFixed(1) + ' V' },
+            { fa: 'ولتاژ واقعی',          en: 'Real Output',           val: vreal.toFixed(1) + ' V' },
+            { fa: 'ریپل (p-p)',           en: 'Ripple (p-p)',          val: ripple.toFixed(2) + ' V' },
+            { fa: 'توان خروجی',           en: 'Output Power',          val: pout.toFixed(2) + ' W' },
+            { fa: 'PIV هر دیود',          en: 'Diode PIV',             val: (2 * v.vm).toFixed(1) + ' V' }
+        ];
+    }
+},
+
+// ==========================================
+// بخش 2: اینورترها (6 مدار)
+// ==========================================
+
+inv_half: {
+    inputs: [
+        { id: 'vdc', def: 24,  fa: 'ولتاژ DC ورودی (V)', en: 'DC Input Voltage (V)' },
+        { id: 'f',   def: 50,  fa: 'فرکانس خروجی (Hz)',  en: 'Output Frequency (Hz)' },
+        { id: 'r',   def: 10,  fa: 'مقاومت بار (Ω)',     en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        const vpeak = v.vdc / 2;
+        const vrms_sq = vpeak;
+        const vrms_f1 = (2 * vpeak) / (Math.PI * Math.SQRT2);
+        const iout = vrms_sq / v.r;
+        const pout = (vrms_sq * vrms_sq) / v.r;
+        const thd = 48.3;
+        return [
+            { fa: 'ولتاژ پیک خروجی',       en: 'Output Peak Voltage',   val: vpeak.toFixed(2) + ' V' },
+            { fa: 'ولتاژ RMS (مربعی)',     en: 'RMS Voltage (Square)',  val: vrms_sq.toFixed(2) + ' V' },
+            { fa: 'RMS هارمونیک اول',      en: 'Fundamental RMS',       val: vrms_f1.toFixed(2) + ' V' },
+            { fa: 'جریان بار',             en: 'Load Current',          val: iout.toFixed(2) + ' A' },
+            { fa: 'توان خروجی',            en: 'Output Power',          val: pout.toFixed(2) + ' W' },
+            { fa: 'فرکانس خروجی',          en: 'Output Frequency',      val: v.f.toFixed(0) + ' Hz' },
+            { fa: 'THD تقریبی',            en: 'Approx THD',            val: thd.toFixed(1) + ' %' }
+        ];
+    }
+},
+
+inv_full: {
+    inputs: [
+        { id: 'vdc', def: 48, fa: 'ولتاژ DC ورودی (V)', en: 'DC Input Voltage (V)' },
+        { id: 'f',   def: 50, fa: 'فرکانس خروجی (Hz)',  en: 'Output Frequency (Hz)' },
+        { id: 'r',   def: 10, fa: 'مقاومت بار (Ω)',     en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        const vpeak = v.vdc;
+        const vrms_sq = v.vdc;
+        const vrms_f1 = (4 * v.vdc) / (Math.PI * Math.SQRT2);
+        const iout = vrms_sq / v.r;
+        const pout = (vrms_sq * vrms_sq) / v.r;
+        return [
+            { fa: 'ولتاژ پیک خروجی',   en: 'Output Peak',       val: vpeak.toFixed(2) + ' V' },
+            { fa: 'RMS موج مربعی',     en: 'Square RMS',        val: vrms_sq.toFixed(2) + ' V' },
+            { fa: 'RMS هارمونیک اول',  en: 'Fundamental RMS',   val: vrms_f1.toFixed(2) + ' V' },
+            { fa: 'جریان بار',         en: 'Load Current',      val: iout.toFixed(2) + ' A' },
+            { fa: 'توان خروجی',        en: 'Output Power',      val: pout.toFixed(2) + ' W' },
+            { fa: 'فرکانس خروجی',      en: 'Output Frequency',  val: v.f.toFixed(0) + ' Hz' },
+            { fa: 'THD تقریبی',        en: 'Approx THD',        val: '48.3 %' }
+        ];
+    }
+},
+
+inv_three: {
+    inputs: [
+        { id: 'vdc', def: 540, fa: 'ولتاژ DC ورودی (V)', en: 'DC Input Voltage (V)' },
+        { id: 'f',   def: 50,  fa: 'فرکانس خروجی (Hz)',  en: 'Output Frequency (Hz)' },
+        { id: 'r',   def: 10,  fa: 'مقاومت بار هر فاز (Ω)', en: 'Load per Phase (Ω)' }
+    ],
+    calc: (v) => {
+        // 6-step 180° conduction
+        const vLL_rms_f1 = (Math.sqrt(6) / Math.PI) * v.vdc;
+        const vPh_rms_f1 = vLL_rms_f1 / Math.sqrt(3);
+        const vLL_rms = Math.sqrt(2/3) * v.vdc;
+        const iPh = vPh_rms_f1 / v.r;
+        const pout = 3 * vPh_rms_f1 * iPh;
+        return [
+            { fa: 'ولتاژ خط RMS (کل)',     en: 'Line RMS (Total)',      val: vLL_rms.toFixed(2) + ' V' },
+            { fa: 'ولتاژ خط هارمونیک اول', en: 'Line Fundamental RMS',  val: vLL_rms_f1.toFixed(2) + ' V' },
+            { fa: 'ولتاژ فاز هارمونیک اول',en: 'Phase Fundamental RMS', val: vPh_rms_f1.toFixed(2) + ' V' },
+            { fa: 'جریان فاز',             en: 'Phase Current',         val: iPh.toFixed(2) + ' A' },
+            { fa: 'توان کل خروجی',         en: 'Total Output Power',    val: pout.toFixed(2) + ' W' },
+            { fa: 'فرکانس خروجی',          en: 'Output Frequency',      val: v.f.toFixed(0) + ' Hz' },
+            { fa: 'اختلاف فاز',            en: 'Phase Shift',           val: '120°' }
+        ];
+    }
+},
+
+spwm: {
+    inputs: [
+        { id: 'vdc', def: 400, fa: 'ولتاژ DC ورودی (V)',    en: 'DC Input Voltage (V)' },
+        { id: 'ma',  def: 0.8, fa: 'شاخص مدولاسیون (ma)',    en: 'Modulation Index (ma)' },
+        { id: 'fc',  def: 5,   fa: 'فرکانس حامل (kHz)',      en: 'Carrier Freq (kHz)' },
+        { id: 'f',   def: 50,  fa: 'فرکانس مرجع (Hz)',       en: 'Reference Freq (Hz)' },
+        { id: 'r',   def: 10,  fa: 'مقاومت بار (Ω)',         en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        let ma = Math.min(1, Math.max(0, v.ma));
+        const vpeak_f1 = ma * v.vdc;              // full-bridge
+        const vrms_f1 = vpeak_f1 / Math.SQRT2;
+        const iout_f1 = vrms_f1 / v.r;
+        const pout = (vrms_f1 * vrms_f1) / v.r;
+        const mf = (v.fc * 1000) / v.f;
+        const region = (ma <= 1) ? 'خطی' : 'اشباع (Over-mod)';
+        return [
+            { fa: 'ولتاژ پیک هارمونیک اول', en: 'Fundamental Peak',   val: vpeak_f1.toFixed(2) + ' V' },
+            { fa: 'ولتاژ RMS هارمونیک اول', en: 'Fundamental RMS',    val: vrms_f1.toFixed(2) + ' V' },
+            { fa: 'جریان بار',              en: 'Load Current',       val: iout_f1.toFixed(2) + ' A' },
+            { fa: 'توان خروجی',             en: 'Output Power',       val: pout.toFixed(2) + ' W' },
+            { fa: 'نسبت فرکانس (mf)',       en: 'Freq Ratio (mf)',    val: mf.toFixed(1) },
+            { fa: 'ناحیه عملکرد',           en: 'Operating Region',   val: region }
+        ];
+    }
+},
+
+multilevel: {
+    inputs: [
+        { id: 'vdc',    def: 100, fa: 'ولتاژ هر منبع DC (V)', en: 'Voltage per DC Source (V)' },
+        { id: 'levels', def: 5,   fa: 'تعداد سطوح (N)',       en: 'Number of Levels (N)' },
+        { id: 'f',      def: 50,  fa: 'فرکانس خروجی (Hz)',    en: 'Output Frequency (Hz)' },
+        { id: 'r',      def: 10,  fa: 'مقاومت بار (Ω)',       en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        const N = Math.max(3, Math.round(v.levels));
+        const nSrc = (N - 1) / 2;
+        const vpeak = nSrc * v.vdc;
+        const vrms = vpeak / Math.SQRT2;
+        const iout = vrms / v.r;
+        const pout = (vrms * vrms) / v.r;
+        const thd = 100 / (N - 1);
+        const switches = 2 * (N - 1);
+        return [
+            { fa: 'تعداد منابع DC',        en: 'DC Sources',          val: nSrc.toFixed(0) },
+            { fa: 'ولتاژ پیک خروجی',       en: 'Peak Output',         val: vpeak.toFixed(2) + ' V' },
+            { fa: 'ولتاژ RMS خروجی',       en: 'RMS Output',          val: vrms.toFixed(2) + ' V' },
+            { fa: 'جریان بار',             en: 'Load Current',        val: iout.toFixed(2) + ' A' },
+            { fa: 'توان خروجی',            en: 'Output Power',        val: pout.toFixed(2) + ' W' },
+            { fa: 'تعداد سوییچ (کسکید)',   en: 'Switches (Cascade)',  val: switches.toFixed(0) },
+            { fa: 'THD تقریبی',            en: 'Approx THD',          val: thd.toFixed(1) + ' %' }
+        ];
+    }
+},
+
+resonant: {
+    inputs: [
+        { id: 'vdc', def: 300,  fa: 'ولتاژ DC ورودی (V)', en: 'DC Input Voltage (V)' },
+        { id: 'l',   def: 100,  fa: 'سلف رزونانس Lr (μH)', en: 'Resonant Inductor Lr (μH)' },
+        { id: 'c',   def: 100,  fa: 'خازن رزونانس Cr (nF)', en: 'Resonant Capacitor Cr (nF)' },
+        { id: 'r',   def: 10,   fa: 'مقاومت بار (Ω)',     en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        const L = v.l / 1e6;
+        const C = v.c / 1e9;
+        const fr = 1 / (2 * Math.PI * Math.sqrt(L * C));
+        const Zo = Math.sqrt(L / C);
+        const Q = Zo / v.r;
+        const vpeak = v.vdc * Q;
+        const iout = vpeak / (Math.SQRT2 * v.r);
+        return [
+            { fa: 'فرکانس رزونانس (fr)',  en: 'Resonant Freq (fr)',   val: (fr / 1000).toFixed(2) + ' kHz' },
+            { fa: 'امپدانس مشخصه (Zo)',    en: 'Characteristic Impedance', val: Zo.toFixed(2) + ' Ω' },
+            { fa: 'ضریب کیفیت (Q)',        en: 'Quality Factor (Q)',   val: Q.toFixed(2) },
+            { fa: 'ولتاژ پیک تانک',        en: 'Tank Peak Voltage',    val: vpeak.toFixed(1) + ' V' },
+            { fa: 'جریان RMS بار',         en: 'Load RMS Current',     val: iout.toFixed(2) + ' A' },
+            { fa: 'نوع سوئیچینگ',          en: 'Switching Type',       val: 'ZVS / ZCS' }
+        ];
+    }
+},
+
+// ==========================================
+// بخش 3: AC-AC (3 مدار)
+// ==========================================
+
+dimmer: {
+    inputs: [
+        { id: 'vm',    def: 311, fa: 'ولتاژ پیک شبکه (V)',  en: 'Peak Line Voltage (V)' },
+        { id: 'alpha', def: 60,  fa: 'زاویه آتش α (درجه)',   en: 'Firing Angle α (deg)' },
+        { id: 'f',     def: 50,  fa: 'فرکانس شبکه (Hz)',     en: 'Line Frequency (Hz)' },
+        { id: 'r',     def: 100, fa: 'مقاومت بار (Ω)',       en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        let alpha = Math.min(180, Math.max(0, v.alpha));
+        const aR = alpha * Math.PI / 180;
+        const vm = v.vm;
+        const vrms_full = vm / Math.SQRT2;
+        const vrms = vm * Math.sqrt((1/Math.PI) * ((Math.PI - aR) + Math.sin(2*aR)/2) / 2) * Math.sqrt(2);
+        // ساده‌تر و دقیق‌تر:
+        const vrms2 = (vm / Math.sqrt(2)) * Math.sqrt(1 - aR/Math.PI + Math.sin(2*aR)/(2*Math.PI));
+        const iout = vrms2 / v.r;
+        const pout = (vrms2 * vrms2) / v.r;
+        const pFull = (vrms_full * vrms_full) / v.r;
+        const pPercent = (pout / pFull) * 100;
+        return [
+            { fa: 'ولتاژ RMS خروجی',   en: 'Output RMS Voltage',  val: vrms2.toFixed(2) + ' V' },
+            { fa: 'جریان RMS بار',     en: 'RMS Load Current',    val: iout.toFixed(2) + ' A' },
+            { fa: 'توان خروجی',        en: 'Output Power',        val: pout.toFixed(2) + ' W' },
+            { fa: 'توان کامل (α=0)',   en: 'Full Power (α=0)',    val: pFull.toFixed(2) + ' W' },
+            { fa: 'درصد توان',         en: 'Power Percentage',    val: pPercent.toFixed(1) + ' %' },
+            { fa: 'زاویه هدایت',       en: 'Conduction Angle',    val: (180 - alpha).toFixed(1) + '°' }
+        ];
+    }
+},
+
+cycloconv: {
+    inputs: [
+        { id: 'vm',    def: 311, fa: 'ولتاژ پیک ورودی (V)',  en: 'Peak Input Voltage (V)' },
+        { id: 'fin',   def: 50,  fa: 'فرکانس ورودی (Hz)',    en: 'Input Frequency (Hz)' },
+        { id: 'fout',  def: 10,  fa: 'فرکانس خروجی (Hz)',    en: 'Output Frequency (Hz)' },
+        { id: 'alpha', def: 30,  fa: 'زاویه آتش α (درجه)',   en: 'Firing Angle α (deg)' },
+        { id: 'r',     def: 10,  fa: 'مقاومت بار (Ω)',       en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        const aR = v.alpha * Math.PI / 180;
+        const vdc_max = (2 * v.vm) / Math.PI;
+        const vout_peak = vdc_max * Math.cos(aR);
+        const vout_rms = vout_peak / Math.SQRT2;
+        const iout = vout_rms / v.r;
+        const pout = (vout_rms * vout_rms) / v.r;
+        const ratio = v.fout / v.fin;
+        const valid = (ratio < 0.33) ? 'مجاز (fo < fi/3)' : 'ناپایدار';
+        return [
+            { fa: 'ولتاژ پیک خروجی',   en: 'Output Peak',       val: vout_peak.toFixed(2) + ' V' },
+            { fa: 'ولتاژ RMS خروجی',   en: 'Output RMS',        val: vout_rms.toFixed(2) + ' V' },
+            { fa: 'جریان بار',         en: 'Load Current',      val: iout.toFixed(2) + ' A' },
+            { fa: 'توان خروجی',        en: 'Output Power',      val: pout.toFixed(2) + ' W' },
+            { fa: 'نسبت فرکانس',       en: 'Freq Ratio',        val: ratio.toFixed(2) },
+            { fa: 'وضعیت',             en: 'Status',            val: valid }
+        ];
+    }
+},
+
+matrix: {
+    inputs: [
+        { id: 'vm',   def: 311, fa: 'ولتاژ پیک ورودی (V)',  en: 'Peak Input Voltage (V)' },
+        { id: 'fin',  def: 50,  fa: 'فرکانس ورودی (Hz)',    en: 'Input Frequency (Hz)' },
+        { id: 'fout', def: 60,  fa: 'فرکانس خروجی (Hz)',    en: 'Output Frequency (Hz)' },
+        { id: 'q',    def: 0.8, fa: 'ضریب انتقال ولتاژ (q)', en: 'Voltage Transfer Ratio (q)' },
+        { id: 'r',    def: 10,  fa: 'مقاومت بار (Ω)',       en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        let q = Math.min(0.866, Math.max(0, v.q));
+        const vout_peak = q * v.vm;
+        const vout_rms = vout_peak / Math.SQRT2;
+        const iout = vout_rms / v.r;
+        const pout = (vout_rms * vout_rms) / v.r;
+        const maxQ = 0.866;
+        return [
+            { fa: 'ضریب q (محدودشده)',     en: 'Voltage Ratio q',         val: q.toFixed(3) },
+            { fa: 'حداکثر q تئوری',        en: 'Max Theoretical q',       val: maxQ.toFixed(3) },
+            { fa: 'ولتاژ پیک خروجی',       en: 'Output Peak Voltage',     val: vout_peak.toFixed(2) + ' V' },
+            { fa: 'ولتاژ RMS خروجی',       en: 'Output RMS Voltage',      val: vout_rms.toFixed(2) + ' V' },
+            { fa: 'جریان بار',             en: 'Load Current',            val: iout.toFixed(2) + ' A' },
+            { fa: 'توان خروجی',            en: 'Output Power',            val: pout.toFixed(2) + ' W' },
+            { fa: 'تعداد سوییچ‌های دوطرفه', en: 'Bidirectional Switches',  val: '9' }
+        ];
+    }
+},
+	// ==========================================
+// بخش 4: رگولاتورها و حفاظت (7 مدار)
+// ==========================================
+
+zener: {
+    inputs: [
+        { id: 'vin', def: 15,   fa: 'ولتاژ ورودی (V)',   en: 'Input Voltage (V)' },
+        { id: 'vz',  def: 5.1,  fa: 'ولتاژ زنر Vz (V)',  en: 'Zener Voltage Vz (V)' },
+        { id: 'pz',  def: 0.5,  fa: 'توان زنر Pz (W)',   en: 'Zener Power Pz (W)' },
+        { id: 'rl',  def: 100,  fa: 'مقاومت بار (Ω)',    en: 'Load Resistor (Ω)' }
+    ],
+    calc: (v) => {
+        const iLoad = v.vz / v.rl;
+        const izMax = v.pz / v.vz;
+        const izMin = izMax * 0.1;
+        const iTotal = iLoad + (izMax + izMin) / 2;
+        const rs = (v.vin - v.vz) / iTotal;
+        const prs = (v.vin - v.vz) * iTotal;
+        const regOK = (v.vin > v.vz * 1.5) ? 'OK ✓' : 'ضعیف ✗';
+        return [
+            { fa: 'جریان بار',            en: 'Load Current',       val: (iLoad * 1000).toFixed(2) + ' mA' },
+            { fa: 'جریان ماکس زنر',       en: 'Max Zener Current',  val: (izMax * 1000).toFixed(2) + ' mA' },
+            { fa: 'مقاومت سری Rs',        en: 'Series Resistor Rs', val: rs.toFixed(1) + ' Ω' },
+            { fa: 'توان Rs',              en: 'Rs Power',           val: prs.toFixed(2) + ' W' },
+            { fa: 'ولتاژ خروجی',          en: 'Output Voltage',     val: v.vz.toFixed(2) + ' V' },
+            { fa: 'وضعیت رگولاسیون',      en: 'Regulation Status',  val: regOK }
+        ];
+    }
+},
+
+linear78: {
+    inputs: [
+        { id: 'vin',  def: 12,   fa: 'ولتاژ ورودی (V)',   en: 'Input Voltage (V)' },
+        { id: 'vout', def: 5,    fa: 'ولتاژ خروجی (V)',   en: 'Output Voltage (V)' },
+        { id: 'iout', def: 500,  fa: 'جریان خروجی (mA)',  en: 'Output Current (mA)' },
+        { id: 'tamb', def: 25,   fa: 'دمای محیط (°C)',    en: 'Ambient Temp (°C)' }
+    ],
+    calc: (v) => {
+        const iA = v.iout / 1000;
+        const vdrop = v.vin - v.vout;
+        const pdiss = vdrop * iA;
+        const eff = (v.vout / v.vin) * 100;
+        const dropoutOK = (vdrop >= 2) ? 'OK (≥2V) ✓' : 'ناکافی ✗';
+        // تخمین افزایش دمای جانکشن با هیت‌سینک 25°C/W
+        const thetaJA = 25;
+        const tj = v.tamb + (pdiss * thetaJA);
+        const thermalOK = (tj < 125) ? 'ایمن ✓' : 'نیاز به هیت‌سینک ⚠';
+        return [
+            { fa: 'افت ولتاژ',             en: 'Voltage Drop',        val: vdrop.toFixed(2) + ' V' },
+            { fa: 'توان تلف‌شده',          en: 'Power Dissipation',   val: pdiss.toFixed(2) + ' W' },
+            { fa: 'راندمان',               en: 'Efficiency',          val: eff.toFixed(1) + ' %' },
+            { fa: 'وضعیت Dropout',        en: 'Dropout Status',      val: dropoutOK },
+            { fa: 'دمای جانکشن تخمینی',    en: 'Est. Junction Temp',  val: tj.toFixed(1) + ' °C' },
+            { fa: 'وضعیت حرارتی',          en: 'Thermal Status',      val: thermalOK }
+        ];
+    }
+},
+
+lm317: {
+    inputs: [
+        { id: 'vin',  def: 15,   fa: 'ولتاژ ورودی (V)',     en: 'Input Voltage (V)' },
+        { id: 'r1',   def: 240,  fa: 'مقاومت R1 (Ω)',       en: 'Resistor R1 (Ω)' },
+        { id: 'r2',   def: 720,  fa: 'مقاومت R2 (Ω)',       en: 'Resistor R2 (Ω)' },
+        { id: 'iout', def: 500,  fa: 'جریان بار (mA)',      en: 'Load Current (mA)' }
+    ],
+    calc: (v) => {
+        const vref = 1.25;
+        const iadj = 50e-6;
+        const vout = vref * (1 + v.r2 / v.r1) + iadj * v.r2;
+        const iA = v.iout / 1000;
+        const pdiss = (v.vin - vout) * iA;
+        const dropoutOK = ((v.vin - vout) >= 3) ? 'OK (≥3V) ✓' : 'ناکافی ✗';
+        const iMax = 1.5;
+        const iStatus = (iA <= iMax) ? 'مجاز ✓' : 'بالاتر از حد مجاز ✗';
+        return [
+            { fa: 'ولتاژ مرجع',       en: 'Reference Voltage',  val: vref.toFixed(2) + ' V' },
+            { fa: 'ولتاژ خروجی',      en: 'Output Voltage',     val: vout.toFixed(2) + ' V' },
+            { fa: 'توان تلف‌شده',     en: 'Power Dissipation',  val: pdiss.toFixed(2) + ' W' },
+            { fa: 'وضعیت Dropout',   en: 'Dropout Status',     val: dropoutOK },
+            { fa: 'حداکثر جریان IC',  en: 'IC Max Current',     val: iMax.toFixed(1) + ' A' },
+            { fa: 'وضعیت جریان',      en: 'Current Status',     val: iStatus }
+        ];
+    }
+},
+
+clamper: {
+    inputs: [
+        { id: 'vm',    def: 10,  fa: 'ولتاژ پیک ورودی (V)', en: 'Input Peak Voltage (V)' },
+        { id: 'vbias', def: 5,   fa: 'ولتاژ بایاس (V)',     en: 'Bias Voltage (V)' },
+        { id: 'type',  def: 1,   fa: 'نوع (1=مثبت، 0=منفی)', en: 'Type (1=Pos, 0=Neg)' }
+    ],
+    calc: (v) => {
+        const vf = 0.7;
+        const isPos = v.type >= 0.5;
+        const vdc_shift = isPos ? (v.vm - vf + v.vbias) : -(v.vm - vf + v.vbias);
+        const vpeak_out = isPos ? (2 * v.vm - vf + v.vbias) : (v.vbias + vf);
+        const vmin_out = isPos ? (v.vbias - vf) : -(2 * v.vm - vf + v.vbias);
+        const type_label = isPos ? 'کلمپ مثبت' : 'کلمپ منفی';
+        return [
+            { fa: 'نوع مدار',           en: 'Clamper Type',       val: type_label },
+            { fa: 'شیفت DC',           en: 'DC Shift',           val: vdc_shift.toFixed(2) + ' V' },
+            { fa: 'حداکثر خروجی',       en: 'Max Output',         val: vpeak_out.toFixed(2) + ' V' },
+            { fa: 'حداقل خروجی',        en: 'Min Output',         val: vmin_out.toFixed(2) + ' V' },
+            { fa: 'دامنه p-p',          en: 'Peak-Peak Amplitude', val: (2 * v.vm).toFixed(2) + ' V' },
+            { fa: 'افت دیود (Vf)',      en: 'Diode Drop',         val: vf.toFixed(2) + ' V' }
+        ];
+    }
+},
+
+clipper: {
+    inputs: [
+        { id: 'vm',    def: 10, fa: 'ولتاژ پیک ورودی (V)', en: 'Input Peak Voltage (V)' },
+        { id: 'vbias', def: 3,  fa: 'ولتاژ بایاس (V)',     en: 'Bias Voltage (V)' },
+        { id: 'type',  def: 2,  fa: 'نوع (1=بالا،2=پایین،3=هردو)', en: 'Type (1=Up,2=Dn,3=Both)' }
+    ],
+    calc: (v) => {
+        const vf = 0.7;
+        const vth = v.vbias + vf;
+        let vmax_out, vmin_out, type_label;
+        if (v.type <= 1) {
+            vmax_out = vth; vmin_out = -v.vm;
+            type_label = 'کلیپر بالا (Positive)';
+        } else if (v.type <= 2) {
+            vmax_out = v.vm; vmin_out = -vth;
+            type_label = 'کلیپر پایین (Negative)';
+        } else {
+            vmax_out = vth; vmin_out = -vth;
+            type_label = 'کلیپر دوطرفه (Both)';
+        }
+        return [
+            { fa: 'نوع مدار',           en: 'Clipper Type',       val: type_label },
+            { fa: 'ولتاژ آستانه Vth',   en: 'Threshold Vth',      val: vth.toFixed(2) + ' V' },
+            { fa: 'حداکثر خروجی',       en: 'Max Output',         val: vmax_out.toFixed(2) + ' V' },
+            { fa: 'حداقل خروجی',        en: 'Min Output',         val: vmin_out.toFixed(2) + ' V' },
+            { fa: 'افت دیود (Vf)',      en: 'Diode Drop',         val: vf.toFixed(2) + ' V' }
+        ];
+    }
+},
+
+snubber: {
+    inputs: [
+        { id: 'vds',  def: 400, fa: 'ولتاژ پیک سوئیچ (V)', en: 'Switch Peak Voltage (V)' },
+        { id: 'id',   def: 10,  fa: 'جریان سوئیچ (A)',     en: 'Switch Current (A)' },
+        { id: 'fsw',  def: 50,  fa: 'فرکانس سوئیچینگ (kHz)', en: 'Switching Freq (kHz)' },
+        { id: 'lk',   def: 1,   fa: 'سلف نشتی Lk (μH)',    en: 'Leakage Inductance (μH)' }
+    ],
+    calc: (v) => {
+        const fHz = v.fsw * 1000;
+        const Lk = v.lk / 1e6;
+        // انرژی ذخیره‌شده در سلف نشتی
+        const Esn = 0.5 * Lk * v.id * v.id;
+        // توان جذب‌شده توسط اسنابر
+        const Psn = Esn * fHz;
+        // انتخاب خازن اسنابر RCD برای کلمپ 20% اضافه
+        const vClamp = v.vds * 1.2;
+        const Csn = (v.id * v.id * Lk) / ((vClamp - v.vds) * (vClamp - v.vds)) * 1e9;
+        // مقاومت اسنابر
+        const Rsn = (vClamp * vClamp) / Psn;
+        return [
+            { fa: 'ولتاژ کلمپ هدف',      en: 'Target Clamp Voltage', val: vClamp.toFixed(1) + ' V' },
+            { fa: 'انرژی نشتی (per cyc)', en: 'Leakage Energy',       val: (Esn * 1e6).toFixed(2) + ' μJ' },
+            { fa: 'توان جذب اسنابر',      en: 'Snubber Power',        val: Psn.toFixed(2) + ' W' },
+            { fa: 'خازن Csn پیشنهادی',    en: 'Recommended Csn',      val: Csn.toFixed(1) + ' nF' },
+            { fa: 'مقاومت Rsn',           en: 'Snubber Resistor Rsn', val: Rsn.toFixed(0) + ' Ω' },
+            { fa: 'توان Rsn',             en: 'Rsn Power Rating',     val: (Psn * 1.5).toFixed(2) + ' W' }
+        ];
+    }
+},
+
+pfc: {
+    inputs: [
+        { id: 'vac',  def: 220, fa: 'ولتاژ RMS شبکه (V)', en: 'Grid RMS Voltage (V)' },
+        { id: 'vout', def: 400, fa: 'ولتاژ خروجی DC (V)', en: 'Output DC Voltage (V)' },
+        { id: 'pout', def: 500, fa: 'توان خروجی (W)',     en: 'Output Power (W)' },
+        { id: 'fsw',  def: 100, fa: 'فرکانس سوئیچ (kHz)', en: 'Switching Freq (kHz)' },
+        { id: 'eff',  def: 95,  fa: 'راندمان هدف (%)',    en: 'Target Efficiency (%)' }
+    ],
+    calc: (v) => {
+        const eta = v.eff / 100;
+        const pIn = v.pout / eta;
+        const iInRMS = pIn / v.vac;
+        const vMin = v.vac * Math.SQRT2;
+        const dMax = 1 - (vMin / v.vout);
+        const iInPeak = iInRMS * Math.SQRT2;
+        // ریپل جریان 20%
+        const dIL = iInPeak * 0.2;
+        const Lmin = (vMin * dMax) / (dIL * v.fsw * 1000) * 1e6;
+        const PF = 0.99; // معمول برای PFC خوب
+        const THD = 5;    // درصد
+        return [
+            { fa: 'توان ورودی',         en: 'Input Power',         val: pIn.toFixed(1) + ' W' },
+            { fa: 'جریان RMS ورودی',    en: 'Input RMS Current',   val: iInRMS.toFixed(2) + ' A' },
+            { fa: 'حداکثر دیوتی',       en: 'Max Duty Cycle',      val: (dMax * 100).toFixed(1) + ' %' },
+            { fa: 'حداقل سلف Boost',    en: 'Min Boost Inductor',  val: Lmin.toFixed(1) + ' μH' },
+            { fa: 'ضریب توان PF',       en: 'Power Factor',        val: PF.toFixed(2) },
+            { fa: 'THD تقریبی',         en: 'Approx THD',          val: THD.toFixed(1) + ' %' }
+        ];
+    }
+},
+
+// ==========================================
+// بخش 5: کاربردهای صنعتی (8 مدار)
+// ==========================================
+
+charger_lead: {
+    inputs: [
+        { id: 'vbat',  def: 12,  fa: 'ولتاژ نامی باتری (V)', en: 'Nominal Battery Voltage (V)' },
+        { id: 'ah',    def: 100, fa: 'ظرفیت باتری (Ah)',     en: 'Battery Capacity (Ah)' },
+        { id: 'crate', def: 0.1, fa: 'نرخ شارژ (C-rate)',    en: 'C-rate (e.g. 0.1C)' },
+        { id: 'soc',   def: 50,  fa: 'SOC فعلی (%)',          en: 'Current SOC (%)' }
+    ],
+    calc: (v) => {
+        // استاندارد باتری سرب-اسید: 2.45V/cell bulk, 2.27V/cell float
+        const cells = Math.round(v.vbat / 2);
+        const vBulk = cells * 2.45;
+        const vFloat = cells * 2.27;
+        const iCC = v.ah * v.crate;
+        const chargeNeeded = v.ah * (100 - v.soc) / 100;
+        const bulkTime = (chargeNeeded * 0.8) / iCC;
+        const absorbTime = 2; // ساعت متوسط
+        const totalTime = bulkTime + absorbTime;
+        const pMax = vBulk * iCC;
+        return [
+            { fa: 'تعداد سلول',           en: 'Number of Cells',      val: cells.toFixed(0) },
+            { fa: 'ولتاژ Bulk (CC)',      en: 'Bulk Voltage (CC)',    val: vBulk.toFixed(2) + ' V' },
+            { fa: 'ولتاژ Float (CV)',     en: 'Float Voltage (CV)',   val: vFloat.toFixed(2) + ' V' },
+            { fa: 'جریان CC',             en: 'CC Current',           val: iCC.toFixed(2) + ' A' },
+            { fa: 'توان ماکس شارژر',      en: 'Max Charger Power',    val: pMax.toFixed(1) + ' W' },
+            { fa: 'زمان تخمینی شارژ',     en: 'Estimated Time',       val: totalTime.toFixed(1) + ' hr' }
+        ];
+    }
+},
+
+charger_lithium: {
+    inputs: [
+        { id: 'cells', def: 3,   fa: 'تعداد سلول سری (S)',    en: 'Cells in Series (S)' },
+        { id: 'ah',    def: 2.5, fa: 'ظرفیت سلول (Ah)',       en: 'Cell Capacity (Ah)' },
+        { id: 'crate', def: 0.5, fa: 'نرخ شارژ (C-rate)',     en: 'C-rate (e.g. 0.5C)' },
+        { id: 'soc',   def: 20,  fa: 'SOC فعلی (%)',          en: 'Current SOC (%)' }
+    ],
+    calc: (v) => {
+        const vCellMax = 4.20;
+        const vCellNom = 3.70;
+        const vCellMin = 3.00;
+        const vMax = v.cells * vCellMax;
+        const vNom = v.cells * vCellNom;
+        const vMin = v.cells * vCellMin;
+        const iCC = v.ah * v.crate;
+        const iCutoff = v.ah * 0.05;
+        const chargeNeeded = v.ah * (100 - v.soc) / 100;
+        const ccTime = (chargeNeeded * 0.7) / iCC;
+        const cvTime = 0.5;
+        const totalTime = ccTime + cvTime;
+        const energy = vNom * v.ah;
+        return [
+            { fa: 'ولتاژ CV نهایی',      en: 'Final CV Voltage',     val: vMax.toFixed(2) + ' V' },
+            { fa: 'ولتاژ نامی پک',       en: 'Nominal Pack Voltage', val: vNom.toFixed(2) + ' V' },
+            { fa: 'ولتاژ قطع تخلیه',     en: 'Discharge Cutoff',     val: vMin.toFixed(2) + ' V' },
+            { fa: 'جریان CC',             en: 'CC Current',           val: iCC.toFixed(2) + ' A' },
+            { fa: 'جریان قطع (0.05C)',   en: 'Cutoff Current',       val: iCutoff.toFixed(3) + ' A' },
+            { fa: 'زمان شارژ تخمینی',    en: 'Est. Charge Time',     val: totalTime.toFixed(1) + ' hr' },
+            { fa: 'انرژی پک',             en: 'Pack Energy',          val: energy.toFixed(1) + ' Wh' }
+        ];
+    }
+},
+
+led_driver: {
+    inputs: [
+        { id: 'vin',   def: 24,  fa: 'ولتاژ ورودی (V)',     en: 'Input Voltage (V)' },
+        { id: 'vled',  def: 3.2, fa: 'Vf هر LED (V)',       en: 'LED Forward Voltage (V)' },
+        { id: 'nled',  def: 6,   fa: 'تعداد LED سری',       en: 'LEDs in Series' },
+        { id: 'iled',  def: 350, fa: 'جریان هر LED (mA)',   en: 'LED Current (mA)' },
+        { id: 'rsense',def: 0.5, fa: 'Rsense (Ω)',          en: 'Rsense (Ω)' }
+    ],
+    calc: (v) => {
+        const vString = v.vled * v.nled;
+        const iA = v.iled / 1000;
+        const vRsense = iA * v.rsense;
+        const headroom = v.vin - vString - vRsense;
+        const pLED = vString * iA;
+        const pLoss = vRsense * iA;
+        const eff = (pLED / (pLED + pLoss)) * 100;
+        const status = (headroom >= 2) ? 'OK ✓' : 'ناکافی ✗';
+        return [
+            { fa: 'ولتاژ کل رشته LED',    en: 'Total LED String',     val: vString.toFixed(2) + ' V' },
+            { fa: 'ولتاژ Rsense',         en: 'Rsense Voltage',       val: vRsense.toFixed(2) + ' V' },
+            { fa: 'Headroom مبدل',        en: 'Driver Headroom',      val: headroom.toFixed(2) + ' V' },
+            { fa: 'توان LED',             en: 'LED Power',            val: pLED.toFixed(2) + ' W' },
+            { fa: 'توان Rsense',          en: 'Rsense Power',         val: pLoss.toFixed(3) + ' W' },
+            { fa: 'راندمان Sense',        en: 'Sense Efficiency',     val: eff.toFixed(1) + ' %' },
+            { fa: 'وضعیت',                en: 'Status',               val: status }
+        ];
+    }
+},
+
+ballast: {
+    inputs: [
+        { id: 'vin',  def: 310, fa: 'ولتاژ DC بعد یکسوساز (V)', en: 'DC Bus Voltage (V)' },
+        { id: 'plamp',def: 36,  fa: 'توان لامپ (W)',             en: 'Lamp Power (W)' },
+        { id: 'vlamp',def: 100, fa: 'ولتاژ کاری لامپ (V)',       en: 'Lamp Operating Voltage (V)' },
+        { id: 'fsw',  def: 40,  fa: 'فرکانس کاری (kHz)',         en: 'Operating Freq (kHz)' }
+    ],
+    calc: (v) => {
+        const iLamp = v.plamp / v.vlamp;
+        const zLamp = v.vlamp / iLamp;
+        // تانک رزونانس LC
+        const omega = 2 * Math.PI * v.fsw * 1000;
+        // Q=1.5 معمول برای بالاست
+        const Q = 1.5;
+        const L = (zLamp * Q) / omega * 1e6;
+        const C = 1 / (omega * zLamp / Q) * 1e9;
+        const pIn = v.plamp / 0.92;
+        return [
+            { fa: 'جریان لامپ',           en: 'Lamp Current',         val: (iLamp * 1000).toFixed(0) + ' mA' },
+            { fa: 'امپدانس لامپ',         en: 'Lamp Impedance',       val: zLamp.toFixed(1) + ' Ω' },
+            { fa: 'سلف رزونانس L',        en: 'Resonant Inductor L',  val: L.toFixed(2) + ' μH' },
+            { fa: 'خازن رزونانس C',       en: 'Resonant Cap C',       val: C.toFixed(1) + ' nF' },
+            { fa: 'ضریب کیفیت Q',         en: 'Quality Factor Q',     val: Q.toFixed(1) },
+            { fa: 'توان ورودی تخمینی',    en: 'Est. Input Power',     val: pIn.toFixed(1) + ' W' }
+        ];
+    }
+},
+
+ups: {
+    inputs: [
+        { id: 'pload',  def: 500, fa: 'توان بار (VA)',        en: 'Load Power (VA)' },
+        { id: 'pf',     def: 0.8, fa: 'ضریب توان بار',        en: 'Load Power Factor' },
+        { id: 'vbat',   def: 12,  fa: 'ولتاژ باتری (V)',      en: 'Battery Voltage (V)' },
+        { id: 'ah',     def: 100, fa: 'ظرفیت باتری (Ah)',     en: 'Battery Capacity (Ah)' },
+        { id: 'nbat',   def: 1,   fa: 'تعداد باتری سری',      en: 'Batteries in Series' },
+        { id: 'eff',    def: 90,  fa: 'راندمان اینورتر (%)',  en: 'Inverter Efficiency (%)' }
+    ],
+    calc: (v) => {
+        const pReal = v.pload * v.pf;
+        const vBatTotal = v.vbat * v.nbat;
+        const eta = v.eff / 100;
+        const energyBat = vBatTotal * v.ah;
+        const energyUseful = energyBat * eta * 0.8; // 80% DoD
+        const backupTime = energyUseful / pReal;
+        const iBatDraw = pReal / (vBatTotal * eta);
+        const chargeTime = v.ah * 0.3 / (v.ah * 0.1);
+        return [
+            { fa: 'توان واقعی بار',       en: 'Real Load Power',      val: pReal.toFixed(0) + ' W' },
+            { fa: 'ولتاژ کل بانک باتری',  en: 'Battery Bank Voltage', val: vBatTotal.toFixed(1) + ' V' },
+            { fa: 'انرژی ذخیره‌شده',       en: 'Stored Energy',        val: energyBat.toFixed(0) + ' Wh' },
+            { fa: 'انرژی قابل استفاده',   en: 'Usable Energy (80%)',  val: energyUseful.toFixed(0) + ' Wh' },
+            { fa: 'جریان کشیده‌شده',       en: 'Battery Draw Current', val: iBatDraw.toFixed(1) + ' A' },
+            { fa: 'زمان پشتیبانی تخمینی', en: 'Est. Backup Time',     val: (backupTime * 60).toFixed(0) + ' min' }
+        ];
+    }
+},
+
+hbridge: {
+    inputs: [
+        { id: 'vdc',  def: 24,  fa: 'ولتاژ ورودی DC (V)', en: 'DC Input Voltage (V)' },
+        { id: 'd',    def: 75,  fa: 'دیوتی سایکل (%)',    en: 'Duty Cycle (%)' },
+        { id: 'r',    def: 2,   fa: 'مقاومت موتور (Ω)',   en: 'Motor Resistance (Ω)' },
+        { id: 'ke',   def: 0.05,fa: 'ثابت ولتاژی موتور Ke (V/rpm)', en: 'Motor Ke (V/rpm)' },
+        { id: 'fsw',  def: 20,  fa: 'فرکانس PWM (kHz)',   en: 'PWM Frequency (kHz)' }
+    ],
+    calc: (v) => {
+        const d = Math.min(100, Math.max(0, v.d)) / 100;
+        // مد Bipolar: Vout = (2D-1)·Vdc
+        const vOut = (2 * d - 1) * v.vdc;
+        const absV = Math.abs(vOut);
+        const direction = (vOut >= 0) ? 'جلو (CW)' : 'عقب (CCW)';
+        // سرعت تقریبی در بی‌باری
+        const rpmNoLoad = absV / v.ke;
+        const iStall = absV / v.r;
+        const pMax = absV * iStall / 4; // توان ماکسیمم در نیمه سرعت
+        return [
+            { fa: 'ولتاژ موتور (Bipolar)', en: 'Motor Voltage',         val: vOut.toFixed(2) + ' V' },
+            { fa: 'جهت چرخش',              en: 'Rotation Direction',    val: direction },
+            { fa: 'سرعت بی‌باری (RPM)',    en: 'No-load Speed',         val: rpmNoLoad.toFixed(0) + ' rpm' },
+            { fa: 'جریان Stall',           en: 'Stall Current',         val: iStall.toFixed(2) + ' A' },
+            { fa: 'توان ماکس تخمینی',      en: 'Est. Max Power',        val: pMax.toFixed(1) + ' W' },
+            { fa: 'فرکانس PWM',            en: 'PWM Frequency',         val: v.fsw.toFixed(0) + ' kHz' }
+        ];
+    }
+},
+
+vfd: {
+    inputs: [
+        { id: 'vmotor', def: 380, fa: 'ولتاژ نامی موتور (V)', en: 'Motor Rated Voltage (V)' },
+        { id: 'fnom',   def: 50,  fa: 'فرکانس نامی (Hz)',     en: 'Rated Frequency (Hz)' },
+        { id: 'fout',   def: 30,  fa: 'فرکانس خروجی (Hz)',    en: 'Output Frequency (Hz)' },
+        { id: 'pmotor', def: 5.5, fa: 'توان موتور (kW)',      en: 'Motor Power (kW)' },
+        { id: 'poles',  def: 4,   fa: 'تعداد قطب',             en: 'Number of Poles' }
+    ],
+    calc: (v) => {
+        const vfRatio = v.vmotor / v.fnom;
+        const vOut = vfRatio * v.fout;
+        const rpmSync = (120 * v.fout) / v.poles;
+        const slip = 3;
+        const rpmReal = rpmSync * (1 - slip / 100);
+        const torqueRatio = (v.fout <= v.fnom) ? 100 : (v.fnom / v.fout * 100);
+        const pOut = v.pmotor * (v.fout / v.fnom);
+        const vdcBus = v.vmotor * Math.SQRT2 / Math.sqrt(3) * 1.35;
+        return [
+            { fa: 'نسبت ثابت V/f',         en: 'V/f Ratio',            val: vfRatio.toFixed(2) + ' V/Hz' },
+            { fa: 'ولتاژ خروجی تنظیمی',    en: 'Adjusted Output V',    val: vOut.toFixed(1) + ' V' },
+            { fa: 'سرعت سنکرون',           en: 'Synchronous Speed',    val: rpmSync.toFixed(0) + ' rpm' },
+            { fa: 'سرعت واقعی (3% لغزش)', en: 'Actual Speed',         val: rpmReal.toFixed(0) + ' rpm' },
+            { fa: 'ولتاژ لینک DC',         en: 'DC Bus Voltage',       val: vdcBus.toFixed(0) + ' V' },
+            { fa: 'گشتاور نسبی',           en: 'Relative Torque',      val: torqueRatio.toFixed(0) + ' %' },
+            { fa: 'توان خروجی تخمینی',     en: 'Est. Output Power',    val: pOut.toFixed(2) + ' kW' }
+        ];
+    }
+},
+
+mppt: {
+    inputs: [
+        { id: 'voc',   def: 36.5, fa: 'ولتاژ مدار باز Voc (V)', en: 'Open Circuit Voltage Voc (V)' },
+        { id: 'isc',   def: 9.5,  fa: 'جریان اتصال کوتاه Isc (A)', en: 'Short Circuit Current Isc (A)' },
+        { id: 'vmpp',  def: 30,   fa: 'ولتاژ MPP (V)',          en: 'MPP Voltage (V)' },
+        { id: 'impp',  def: 8.8,  fa: 'جریان MPP (A)',          en: 'MPP Current (A)' },
+        { id: 'vbat',  def: 24,   fa: 'ولتاژ باتری (V)',        en: 'Battery Voltage (V)' },
+        { id: 'eff',   def: 97,   fa: 'راندمان MPPT (%)',       en: 'MPPT Efficiency (%)' }
+    ],
+    calc: (v) => {
+        const pMax = v.vmpp * v.impp;
+        const ff = pMax / (v.voc * v.isc);
+        const pBat = pMax * (v.eff / 100);
+        const iBat = pBat / v.vbat;
+        const mode = (v.vmpp > v.vbat) ? 'Buck (کاهنده)' : 'Boost (افزاینده)';
+        const dBuck = v.vbat / v.vmpp;
+        return [
+            { fa: 'توان ماکس پنل (Pmax)',  en: 'Panel Max Power',      val: pMax.toFixed(1) + ' W' },
+            { fa: 'ضریب پر شدن (FF)',     en: 'Fill Factor (FF)',     val: ff.toFixed(3) },
+            { fa: 'توان خروجی مبدل',       en: 'Converter Output Power', val: pBat.toFixed(1) + ' W' },
+            { fa: 'جریان شارژ باتری',      en: 'Battery Charge Current', val: iBat.toFixed(2) + ' A' },
+            { fa: 'حالت عملکرد مبدل',      en: 'Converter Mode',       val: mode },
+            { fa: 'دیوتی سایکل تقریبی',   en: 'Approx Duty Cycle',    val: (dBuck * 100).toFixed(1) + ' %' }
+        ];
+    }
+},
+
             buck: {
                 inputs: [
                     { id: 'vin', def: 24, fa: 'ولتاژ ورودی (V)', en: 'Input Voltage (V)' },
