@@ -55,15 +55,15 @@ const eduData = {
             {cat:'inv',  id:'resonant',   hasSim:true, fa:'اینورتر رزونانسی',         en:'Resonant Inverter'},
             
             // AC-AC (3)
-            {cat:'acac', id:'dimmer',     hasSim:false, fa:'دیمر (تریاک)',             en:'TRIAC Dimmer'},
-            {cat:'acac', id:'cycloconv',  hasSim:false, fa:'سایکلوکانورتور',           en:'Cycloconverter'},
-            {cat:'acac', id:'matrix',     hasSim:false, fa:'ماتریکس کانورتر',          en:'Matrix Converter'},
+            {cat:'acac', id:'dimmer',     hasSim:true, fa:'دیمر (تریاک)',             en:'TRIAC Dimmer'},
+            {cat:'acac', id:'cycloconv',  hasSim:true, fa:'سایکلوکانورتور',           en:'Cycloconverter'},
+            {cat:'acac', id:'matrix',     hasSim:true, fa:'ماتریکس کانورتر',          en:'Matrix Converter'},
             
             // Regulators (7)
-            {cat:'reg',  id:'zener',      hasSim:false, fa:'رگولاتور زنر',             en:'Zener Regulator'},
-            {cat:'reg',  id:'linear78',   hasSim:false, fa:'رگولاتور خطی (78xx)',      en:'Linear Regulator (78xx)'},
-            {cat:'reg',  id:'lm317',      hasSim:false, fa:'رگولاتور LM317',           en:'LM317 Regulator'},
-            {cat:'reg',  id:'clamper',    hasSim:false, fa:'مدار کلمپ (Clamper)',      en:'Clamper Circuit'},
+            {cat:'reg',  id:'zener',      hasSim:true, fa:'رگولاتور زنر',             en:'Zener Regulator'},
+            {cat:'reg',  id:'linear78',   hasSim:true, fa:'رگولاتور خطی (78xx)',      en:'Linear Regulator (78xx)'},
+            {cat:'reg',  id:'lm317',      hasSim:true, fa:'رگولاتور LM317',           en:'LM317 Regulator'},
+            {cat:'reg',  id:'clamper',    hasSim:true, fa:'مدار کلمپ (Clamper)',      en:'Clamper Circuit'},
             {cat:'reg',  id:'clipper',    hasSim:false, fa:'مدار کلیپر (Clipper)',     en:'Clipper Circuit'},
             {cat:'reg',  id:'snubber',    hasSim:false, fa:'مدار Snubber',             en:'Snubber Circuit'},
             {cat:'reg',  id:'pfc',        hasSim:false, fa:'اصلاح ضریب توان (PFC)',    en:'Power Factor Correction'},
