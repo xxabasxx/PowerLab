@@ -73,10 +73,10 @@ const eduData = {
             {cat:'app',  id:'charger_lithium',hasSim:true, fa:'شارژر لیتیوم (CC-CV)', en:'Lithium Charger (CC-CV)'},
             {cat:'app',  id:'led_driver',     hasSim:true, fa:'درایور LED',           en:'LED Driver'},
             {cat:'app',  id:'ballast',        hasSim:true, fa:'بالاست الکترونیکی',    en:'Electronic Ballast'},
-            {cat:'app',  id:'ups',            hasSim:false, fa:'منبع تغذیه (UPS)',     en:'UPS'},
-            {cat:'app',  id:'hbridge',        hasSim:false, fa:'H-Bridge موتور DC',    en:'DC Motor H-Bridge'},
-            {cat:'app',  id:'vfd',            hasSim:false, fa:'درایو موتور AC (VFD)', en:'AC Motor Drive (VFD)'},
-            {cat:'app',  id:'mppt',           hasSim:false, fa:'ردیاب MPPT خورشیدی',   en:'Solar MPPT Tracker'}
+            {cat:'app',  id:'ups',            hasSim:true, fa:'منبع تغذیه (UPS)',     en:'UPS'},
+            {cat:'app',  id:'hbridge',        hasSim:true, fa:'H-Bridge موتور DC',    en:'DC Motor H-Bridge'},
+            {cat:'app',  id:'vfd',            hasSim:true, fa:'درایو موتور AC (VFD)', en:'AC Motor Drive (VFD)'},
+            {cat:'app',  id:'mppt',           hasSim:true, fa:'ردیاب MPPT خورشیدی',   en:'Solar MPPT Tracker'}
         ];
 
        // 3. لغت‌نامه و متون ترجمه‌شده (نسخه کامل و تست شده)
